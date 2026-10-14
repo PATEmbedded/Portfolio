@@ -4,106 +4,400 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Portfolio · Pourya Afshintabar</title>
+<meta name="description" content="Pourya Afshintabar, Embedded Systems Engineer (hardware and firmware), Vienna, Austria.">
+<title>Pourya Afshintabar · Embedded Systems Engineer</title>
 <style>
   :root {
-    --bg: #f6f7f9; --card: #ffffff; --text: #1d2330; --muted: #5b6475;
-    --line: #dde1e8; --accent: #1f4e8c; --accent-text: #ffffff; --error: #b42318;
+    --bg: #f5f7fa; --surface: #ffffff; --text: #172033; --muted: #5a6478; --line: #e1e6ee;
+    --accent: #1f4e8c; --accent-soft: #e8f0fb; --accent-text: #ffffff; --error: #b42318;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .05), 0 6px 18px rgba(16, 24, 40, .06);
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg: #12151b; --card: #1b2029; --text: #e6e9ef; --muted: #9aa3b2;
-      --line: #2c3340; --accent: #6ea3e6; --accent-text: #0b1220; --error: #f97066;
+      --bg: #0f131a; --surface: #171c25; --text: #e7ebf2; --muted: #9aa4b5; --line: #283041;
+      --accent: #7aa9e8; --accent-soft: #1c2a40; --accent-text: #0b1220; --error: #f97066; --shadow: none;
     }
   }
   :root[data-theme="dark"] {
-    --bg: #12151b; --card: #1b2029; --text: #e6e9ef; --muted: #9aa3b2;
-    --line: #2c3340; --accent: #6ea3e6; --accent-text: #0b1220; --error: #f97066;
+    --bg: #0f131a; --surface: #171c25; --text: #e7ebf2; --muted: #9aa4b5; --line: #283041;
+    --accent: #7aa9e8; --accent-soft: #1c2a40; --accent-text: #0b1220; --error: #f97066; --shadow: none;
   }
   * { box-sizing: border-box; }
-  body {
-    margin: 0; background: var(--bg); color: var(--text);
-    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  }
-  .gate { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
-  .gate form {
-    width: 100%; max-width: 380px; background: var(--card); border: 1px solid var(--line);
-    border-radius: 12px; padding: 28px;
-  }
-  .gate h1 { margin: 0 0 4px; font-size: 1.3rem; }
-  .gate p { margin: 0 0 20px; color: var(--muted); font-size: .95rem; }
-  .gate input {
-    width: 100%; padding: 10px 12px; font: inherit; color: var(--text); background: var(--bg);
-    border: 1px solid var(--line); border-radius: 8px;
-  }
-  .gate button {
-    width: 100%; margin-top: 12px; padding: 10px; font: inherit; font-weight: 600; cursor: pointer;
-    color: var(--accent-text); background: var(--accent); border: 0; border-radius: 8px;
-  }
-  .gate button:disabled { opacity: .6; cursor: wait; }
-  .gate .msg { min-height: 1.4em; margin: 10px 0 0; font-size: .9rem; color: var(--error); }
-  .gate .contact { margin: 16px 0 0; font-size: .85rem; }
-  main { max-width: 860px; margin: 0 auto; padding: 32px 16px 64px; }
-  main h1 { font-size: 1.8rem; margin: 0 0 4px; }
-  main h2 { margin-top: 2.2em; padding-bottom: 6px; border-bottom: 1px solid var(--line); }
-  main h3 { margin-top: 1.6em; }
-  main a { color: var(--accent); }
-  main img { max-width: 100%; height: auto; border-radius: 8px; }
-  main table { border-collapse: collapse; width: 100%; display: block; overflow-x: auto; }
-  main th, main td { border: 1px solid var(--line); padding: 6px 10px; text-align: left; }
-  main blockquote { margin: 1em 0; padding: 4px 16px; border-left: 3px solid var(--accent); color: var(--muted); }
-  main code { font-family: ui-monospace, Consolas, monospace; font-size: .9em; }
-  main pre { overflow-x: auto; padding: 12px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.6 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
   a { color: var(--accent); }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 0 16px; }
+  .muted { color: var(--muted); }
+
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border-radius: 10px; font: inherit;
+         font-weight: 600; text-decoration: none; cursor: pointer; border: 1px solid var(--line); background: var(--surface); color: var(--text); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+  .btn:disabled { opacity: .6; cursor: wait; }
+
+  /* Profile */
+  .hero { display: flex; flex-wrap: wrap; align-items: center; gap: 28px; padding: 56px 0 32px; }
+  .photo { width: 132px; height: 132px; border-radius: 50%; object-fit: cover; border: 4px solid var(--surface); box-shadow: var(--shadow); }
+  .hero h1 { margin: 0; font-size: clamp(1.8rem, 4vw, 2.6rem); line-height: 1.2; }
+  .subtitle { margin: 4px 0 6px; color: var(--accent); font-weight: 600; font-size: 1.1rem; }
+  .meta { margin: 0 0 18px; color: var(--muted); }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; margin-bottom: 20px; box-shadow: var(--shadow); }
+  .card h2 { margin: 0 0 14px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .card p { margin: 0; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .tile { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .tile strong { display: block; color: var(--accent); font-size: 1.25rem; }
+  .tile span { color: var(--muted); font-size: .92rem; }
+  .skills { display: grid; gap: 12px; }
+  .skill-row { display: grid; grid-template-columns: 130px 1fr; gap: 12px; align-items: start; }
+  .skill-row b { padding-top: 4px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { padding: 4px 10px; border-radius: 999px; background: var(--accent-soft); font-size: .88rem; }
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { position: relative; padding: 0 0 18px 22px; border-left: 2px solid var(--line); }
+  .timeline li:last-child { padding-bottom: 0; }
+  .timeline li::before { content: ""; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--accent); }
+  .timeline .when { font-size: .85rem; color: var(--muted); }
+  .timeline .role { font-weight: 600; }
+  .cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
+  footer { padding: 24px 0 40px; text-align: center; font-size: .85rem; color: var(--muted); }
+
+  /* Password gate */
+  .gate { min-height: 80vh; display: grid; place-items: center; padding: 32px 0; }
+  .gate form { width: 100%; max-width: 420px; }
+  .gate h1 { margin: 0 0 6px; font-size: 1.35rem; }
+  .gate input { width: 100%; margin: 16px 0 12px; padding: 11px 12px; font: inherit; color: var(--text); background: var(--bg);
+                border: 1px solid var(--line); border-radius: 10px; }
+  .gate .btn { width: 100%; justify-content: center; }
+  .gate .msg { min-height: 1.4em; margin: 10px 0 0; font-size: .9rem; color: var(--error); }
+  .gate .request { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--line); font-size: .92rem; }
+  .back { display: inline-block; margin-top: 16px; font-size: .92rem; }
+
+  /* Projects */
+  .bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; padding: 40px 0 20px; }
+  .bar h1 { margin: 0; font-size: 1.7rem; }
+  .crumb { font-size: .95rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; padding-bottom: 40px; }
+  .folder { display: flex; flex-direction: column; gap: 4px; padding: 20px; border-radius: 14px; text-decoration: none; color: var(--text);
+            background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); transition: transform .12s, border-color .12s; }
+  .folder:hover, .folder:focus-visible { transform: translateY(-2px); border-color: var(--accent); }
+  .folder svg { color: var(--accent); margin-bottom: 6px; }
+  .folder .name { font-weight: 600; }
+  .folder .count { font-size: .88rem; color: var(--muted); }
+  .about { margin-bottom: 20px; }
+  .about :first-child { margin-top: 0; }
+  .about :last-child { margin-bottom: 0; }
+  .files { list-style: none; margin: 0 0 40px; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+  .files li + li { border-top: 1px solid var(--line); }
+  .file { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-decoration: none; color: var(--text); }
+  .file:hover, .file:focus-visible { background: var(--accent-soft); }
+  .badge { flex: none; width: 46px; padding: 3px 0; border-radius: 6px; text-align: center; font-size: .7rem; font-weight: 700;
+           background: var(--accent-soft); color: var(--accent); }
+  .file .fname { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .file .fsize { flex: none; font-size: .85rem; color: var(--muted); }
+  .empty { padding: 16px; color: var(--muted); }
+
+  /* File viewer */
+  .viewer { position: fixed; inset: 0; z-index: 10; display: grid; place-items: center; padding: 16px; background: rgba(10, 14, 20, .72); }
+  .viewer-panel { width: 100%; max-width: 1000px; max-height: 92vh; display: flex; flex-direction: column; background: var(--surface);
+                  border-radius: 14px; overflow: hidden; }
+  .viewer-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+  .viewer-head .title { flex: 1; min-width: 0; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .viewer-head .btn { padding: 6px 12px; font-size: .9rem; }
+  .viewer-body { overflow: auto; padding: 14px; }
+  .viewer-body img, .viewer-body video { display: block; max-width: 100%; max-height: 78vh; margin: 0 auto; }
+  .viewer-body audio { width: 100%; }
+  .viewer-body iframe { width: 100%; height: 78vh; border: 0; }
+  .viewer-body pre { margin: 0; white-space: pre-wrap; font: .88rem/1.5 ui-monospace, Consolas, monospace; }
+
+  @media (max-width: 600px) {
+    .hero { padding-top: 32px; gap: 20px; }
+    .skill-row { grid-template-columns: 1fr; gap: 6px; }
+  }
 </style>
 </head>
 <body>
-<div class="gate" id="gate">
-  <form id="form">
-    <h1>Pourya Afshintabar · Portfolio</h1>
-    <p>This portfolio is shared with recruiters on request. Enter the password you received.</p>
-    <input id="password" type="password" autocomplete="current-password" placeholder="Password" required autofocus>
-    <button id="unlock" type="submit">Open portfolio</button>
-    <p class="msg" id="msg" role="alert"></p>
-    <p class="contact">Need access? <a href="mailto:pouryaafshintabar@gmail.com">pouryaafshintabar@gmail.com</a></p>
-  </form>
+
+<!-- ===================== PUBLIC PROFILE (edit freely) ===================== -->
+<div id="view-profile">
+  <div class="wrap">
+    <header class="hero">
+      <img class="photo" src="assets/photo.jpg" alt="Pourya Afshintabar">
+      <div>
+        <h1>Pourya Afshintabar</h1>
+        <p class="subtitle">Embedded Systems Engineer · Hardware &amp; Firmware</p>
+        <p class="meta">Vienna, Austria · Available immediately · Rot-Weiß-Rot – Karte plus</p>
+        <div class="actions">
+          <a class="btn primary" href="#projects">View projects</a>
+          <a class="btn" href="mailto:pouryaafshintabar@gmail.com">Email</a>
+          <a class="btn" href="https://www.linkedin.com/in/pourya-afshintabar/" target="_blank" rel="noopener">LinkedIn</a>
+          <a class="btn" href="https://github.com/PATEmbedded" target="_blank" rel="noopener">GitHub</a>
+        </div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>About</h2>
+      <p>I build embedded products end to end: from architecture, schematics and multilayer PCBs to firmware
+        (bare-metal, FreeRTOS, embedded Linux), production and field deployment. 10+ years across industrial
+        automation, oil &amp; gas, power generation, medical and IoT, plus on-device Edge AI research.</p>
+    </section>
+
+    <section class="card">
+      <h2>Highlights</h2>
+      <div class="tiles">
+        <div class="tile"><strong>10+ years</strong><span>Industrial, oil &amp; gas, power, medical and IoT products</span></div>
+        <div class="tile"><strong>PCB → production</strong><span>Hardware, firmware and software built as one system</span></div>
+        <div class="tile"><strong>Standards-guided</strong><span>Hardware designed with IEC 61000, IEC 60068 and IEC 60079 in mind</span></div>
+        <div class="tile"><strong>Edge AI</strong><span>99.54% on-device accuracy in 16.8 KB RAM; paper submitted to IEEE TII</span></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Skills</h2>
+      <div class="skills">
+        <div class="skill-row"><b>Hardware</b><div class="chips">
+          <span class="chip">Altium Designer</span><span class="chip">Multilayer high-speed &amp; mixed-signal PCB</span>
+          <span class="chip">Signal &amp; power integrity</span><span class="chip">EMC-aware design</span><span class="chip">DFM / DFT</span></div></div>
+        <div class="skill-row"><b>Firmware</b><div class="chips">
+          <span class="chip">C / C++</span><span class="chip">FreeRTOS</span><span class="chip">Bare-metal</span>
+          <span class="chip">Embedded Linux (Yocto, Buildroot)</span><span class="chip">Device drivers</span><span class="chip">OTA updates</span></div></div>
+        <div class="skill-row"><b>Processors</b><div class="chips">
+          <span class="chip">ARM Cortex-M (STM32)</span><span class="chip">ARM Cortex-A</span><span class="chip">ESP32</span>
+          <span class="chip">TI DSP</span><span class="chip">Xilinx FPGA</span></div></div>
+        <div class="skill-row"><b>Connectivity</b><div class="chips">
+          <span class="chip">MQTT</span><span class="chip">REST</span><span class="chip">Modbus</span><span class="chip">Siemens S7</span>
+          <span class="chip">CAN</span><span class="chip">RS-485</span><span class="chip">Ethernet</span><span class="chip">BLE</span><span class="chip">Wi-Fi</span></div></div>
+        <div class="skill-row"><b>Edge AI</b><div class="chips">
+          <span class="chip">TinyML</span><span class="chip">INT8 quantization</span><span class="chip">Early-exit cascades</span>
+          <span class="chip">PyTorch</span><span class="chip">TFLite Micro</span></div></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Experience</h2>
+      <ul class="timeline">
+        <li><div class="when">07/2026 – Present</div><div class="role">Edge AI Researcher · Independent project</div>
+          <div class="muted">Lightweight neural networks for on-device flame detection; paper submitted to IEEE TII.</div></li>
+        <li><div class="when">10/2022 – 06/2026</div><div class="role">Senior Embedded Systems (IoT) Engineer · Novaday</div>
+          <div class="muted">Remeet meeting-room panels and the IoT I/O Controller, from hardware and firmware to production.</div></li>
+        <li><div class="when">09/2020 – 11/2021</div><div class="role">Senior Firmware and Hardware Engineer · FANAP</div>
+          <div class="muted">Hardware team lead for an industrial IIoT edge gateway.</div></li>
+        <li><div class="when">03/2015 – 08/2020</div><div class="role">Electronic Designer and Firmware Developer · Contract work</div>
+          <div class="muted">Industrial, oil &amp; gas, power and medical clients, including MAPNA and 3W Networks.</div></li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2>Education &amp; languages</h2>
+      <ul class="timeline">
+        <li><div class="when">2021 – 2024</div><div class="role">M.Sc. Electrical Engineering – Digital Electronic Systems</div>
+          <div class="muted">Shahid Beheshti University, Tehran · GPA 18.42 / 20 · Thesis: low-cost on-device flame detection</div></li>
+        <li><div class="when">2011 – 2015</div><div class="role">B.Sc. Electronic Engineering</div>
+          <div class="muted">Shamsipour Technical College, Tehran</div></li>
+      </ul>
+      <p style="margin-top:16px">English (C1) · German (A2) · Persian (native) · Kurdish (C1)</p>
+    </section>
+
+    <section class="card cta">
+      <div><b>See the work</b><div class="muted">Project folders with demos, photos and documents.</div></div>
+      <a class="btn primary" href="#projects">View projects</a>
+    </section>
+  </div>
 </div>
-<main id="content" hidden></main>
+
+<!-- ===================== PASSWORD GATE ===================== -->
+<div id="view-gate" hidden>
+  <div class="wrap gate">
+    <form id="gate-form" class="card">
+      <h1>Projects are password-protected</h1>
+      <p class="muted">Enter the password to open the project folders.</p>
+      <input id="password" type="password" autocomplete="current-password" placeholder="Password" required>
+      <button id="unlock" class="btn primary" type="submit">Open projects</button>
+      <p id="gate-msg" class="msg" role="alert"></p>
+      <p class="request">Don't have the password? Email me and I'll send it to you:<br>
+        <a href="mailto:pouryaafshintabar@gmail.com?subject=Portfolio%20password%20request&amp;body=Hello%20Pourya%2C%0A%0AI%20am%20%5Bname%5D%20from%20%5Bcompany%5D%20and%20would%20like%20to%20see%20your%20projects.%0A">pouryaafshintabar@gmail.com</a></p>
+      <a class="back" href="#">← Back to profile</a>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== PROJECTS ===================== -->
+<div id="view-projects" hidden>
+  <div class="wrap">
+    <div class="bar">
+      <h1 id="projects-title">Projects</h1>
+      <span class="crumb"><a id="crumb-back" href="#projects">← All projects</a> · <a href="#">Profile</a></span>
+    </div>
+    <div id="grid" class="grid"></div>
+    <div id="project" hidden>
+      <div id="project-about" class="card about"></div>
+      <ul id="files" class="files"></ul>
+    </div>
+  </div>
+</div>
+
+<div id="viewer" class="viewer" hidden>
+  <div class="viewer-panel" role="dialog" aria-modal="true" aria-labelledby="viewer-title">
+    <div class="viewer-head">
+      <span id="viewer-title" class="title"></span>
+      <a id="viewer-download" class="btn" hidden>Download</a>
+      <button id="viewer-close" class="btn" type="button" aria-label="Close">✕</button>
+    </div>
+    <div id="viewer-body" class="viewer-body"></div>
+  </div>
+</div>
+
+<footer class="wrap">© 2026 Pourya Afshintabar · All rights reserved · View-only, for recruitment</footer>
+
 <script>
-  // Encrypted with AES-256-GCM; key from PBKDF2-SHA256. Generated by tools/build.py.
-  const P = { salt: "gecIjzVaDS+ysP6GU4BXvQ==", iv: "bwki47rCdeRRy5La", data: "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", iterations: 600000 };
+  // Projects are encrypted with AES-256-GCM (key from PBKDF2-SHA256) by tools/build.py.
+  const SITE = { salt: "EM6AVZ369/uFv/+Qm16/dg==", iterations: 250000, manifest: "9dob7LMCtiH39dNRaa+Pa/ygcnQoNw+F2ChNYKNIlfThn3U6QNnZrKVBCtg/Bm5g285S0thmkFPnjBw9ebFkYNy8ubbHX5Nir3mKPg1Wn+DpQW1YDN8ZxTvhV1iiBNovy/157j0XXtod33fRkv1W1rxLETWAOqCQdn3I4vzx9AfcvD6st3B5PvJFDz4z4g4UickvnnHqzCqSQcsKc26Arm5ZnvC58MlARvnumDPkEZt1mEImwdJmNSgZLYHPRt8X1fHP2FjSpBabQv8h5kwY4NHHK1aliI075z2OvPiPtPK6+c7QHmrUtAfxf1rujzxiAyQ/a46wq/hzuF3NNt5Gc4ZFsEDWsVkJOB737h1fj9ukks0nER0iCP996Ulty3BPVPyStZIvFC5+aYOr0o/C49QtcDjzdX+12Kj0/Vbjng31Y7p1xgnR8BJaCdxqe/lBm/j5/OHH/Gq+kr4YAw/Ho1hoKfqQrEyZoo1zbgu/RZTgXXJNZvQ6ghueaNaBT0lEoCn0RWufCgpJejF+Z5aZYwdfY80qPiKmKybPuUiZi1OQu+HY2Gsj476te76AYAUPKggogolQvBppxYzxX+BK56Dk7QuF5dftPKoNQxljpEani1SNvKMwIfZ2GHZvR90wXq4SQTwXHc39w3Z+xBRPFD5OwboRxUp73ju1MpoKkWMw/0bNE6/HsPZ3z8cobzTdV3mGtwVlSUF07k05AW4CWdN85aw9U9nh3/9j58XT2zUBgnZ+v6Yy5Z/+XQNO4FhCcFShxL86Z0OFlo/wQ7CkrNw84tyiY24yU1/ad7pB724VwrOzhGamZSCrlsGGdIqmtCCFu/EqGeXnKHAY7aCDfETke+KuTAgHGAjL0XN0XdvwSKBeZP6mklQTfj6F32XVB+3txyZjKTlnvA8zQMW1nPJUPFh90o3MVi6qNSAhhB4Pxv2xWxCRw5wjGjxmmBlNTjdI08HtDDwf6eWkfDxwazkH/I6C2WNA9ip6lBFz2KrwypB9eh8wKFPkcCfDhJdKzZOI26QK1/n+/GeDkf+PiodaCRVOLNBZS2+rze7FVTL1YRga37IVL+mCvY60wX8ZMB0YWIPLAoN2bZjGMpb0hCnlav1IUeiR9JNeb9W+3AfWuuEQlF045EQa9m9hLSN2GrPxK+Fwc/Yf8uobhQZRUwUvy/7QLt+0EkoNhY0DB9HL1gXE368xp7v1LctgkFqzSgCY1G7RqwLSfglgRhk4zE2EoeqnqApqd51VNY+I2kgHvmiWVqSm1rmub+QJ1eb2LbkywXkTcq2Jchfx8CSD0xTHNftUvShHX+sqa4HKcP953DuTGTjmu6rUb+LNy3mbns0AK2JTCRmTW7w/4RrDb158XjhBgobTEh8UZU4yuM8ORhSXZoYAaY46aiC5UdN6Y1R1HciEjXL0rUN6AsWuVj/sDLVs7MPaWLLjlsTelvtOnHdwoQI1UYrM0xbPf/dVlQRH7RChnD39Be5uxrnfWkHC7TraLU47INs1Hk56BSmZSudJDEDgkipL8fBINVZ9sxuXi/3/5Ic8Sob24muIbL6+5evKkGEuX52+/45kGWGHvUUI/3t9dWxbX8tLfpMSrneh0fqJE6IKlm1GuRC35MF7wyTIsBbQTV2dqWxthBYbe+qCtSb3ijClw/NYWRnxAHQd3sPhPmJ5HfNjz2EOwO2zaJvU0V9i45kst/05woHY5OFIqBLvrYXBSIqivvbuIF4LwAROmwBJwWhHCUBjcuvFrJsCsOTc4k6GLXYuT4x9+J07uIiFfVM2k9f8x46P4PMKIanllFtztyjbnhdUltsTsJg2XYGTQipq0QwdxMwi3iOytgdt4q/9nqwOaBpOA+i2wXTj6DAV0My6DidDDtgxVqR0ebvKSXw64f8F8z6GabygGS/Z4hTFHMCYOiQCipj6Adc7eO7y8LWsTF3oTW4sT7d+abriKXp4Bg90xs//ZmzPbnIYHODEXAWFXYzfDxtoVRTtLQIsOYaM/y6q6gR7Vnhpnk5Wk3p5xpoMAng97l53vmm7kvsd4IVLmYcprNfUFtKME1Vwxxkv3G3mM6zTgc22sH+8NfZSQZOrtNIDNYOe+29L38JaU7b/D1mAnxjyJ/io30AsSsbqeNEL3bYjBC3uP30A/n6AY+QNe7GzPN+qUpS6BdydQ572U9Lm+FtJb7i59HAj1jPZ3xJSL91GmiaFvCOetIqZPdbA04Bp4tItPOPujVn4jXPLQF4PpvhdYP9eURCnVvO81MxnXmLdtR8ZHE4hUlNZ4B0H4+UrIhzLUeC3jJ42XT31j2/kEFn5Ls3J8JgBIjLFSBoD3Ly6ora6qxMZXR8EQ7Cqrk3G3E6udbRlJ2aYSq5JaL6BoK1Zt6+Y+Gig0aP9+qgsFT5x9V9bHpYlQttGc+Ne2px3JoXW4KwpJ/dZAFle+Q8C0cvoY6D620d0RNQP1HolxHsTJvoss6MX2PoZHZfN8JOKTrghgy6DxrA+8LEipxuVLZ/0zd9OEateGrad4YylMG8cn9Ut1zM+VmwOGKt6+jRC5JJj0Pcc6mT1SpADNP76UOGkeU0MCB0jYXyKc1PVnQNMnei+m3N9HO0mRbohaZjtusRX73v+Nl+ll+4SwIYYBgNDepD4QpZp7rHZtUT5XWVwXh0Ag2HrEqmZVGgpjgBypoQgHNa5cQkRI4ccI4Rjvj7YBYq/E/RC0ffYY3x77LIREv8nQ8UuL5IjR7/5ahScdVWR0ijLF7UYUIYlPHgbvD3oPlLI6blNl30EkNRhN0oOBzkebM/9GpS7T/3HOKf8JRyVWBeE5up8moHGowQ+Q1GBz2d1vhrxXfBGl1Q+mt8vYEZ+ohM9oJnwHwgkrwC3PK2xJi4fsccCpi6teQDkeEAhWFV3w/2SyPp9qFZKQHWevnV0jsc+IN2RRzXGRBOxJUEX4RxY9sko7x/TKvO8h6RozhqQIxrUI3v2XSGUlqCSVyj4wS/fFjNk4Y5RQaW+XEWIZ4uovB9tCQr8ImhU6e6D0iFOcHWMhYOOQ1JrFkCPEp9Dv190sw840pxemfStcZnuEhpwG+/8e10HAK2WtcFwp8Fw4XD4/UWGY3a0B62wh9sd61QLifr3ggAlobCt9sfkETgLud3XNKL1xHWcbjOltYV4RVDucO/nz8GWXkURoPtbp/+lrFHPiztYCt2kxVeJFyftCNN5sgZ3SPKhKKAFmcj2cUP7IHzjiBpDoutS8QhlTwx/mNxzNKrXz2AZK5xMeQwoTKGLBukd8xFbv97tnzNj381AHYyQbmXidKDMiSDBAR395TsBhgloWR8qWtZaxYAf2Meh/ti5dT3VqT6bPfvEHUsRqT4d042J7UpYfDE3HJjM82f2ltqDgn09f3KCW4LzUfVynHVo0n+fpJD+94X0hfvJDQa6mWsyY96q7+1vCTerlqseAHND7GXav1/ddUxidNcwnqFEsNf6eqzi1/0fWaWTuF8H4yAObu02fUk2CNum4QpbmD9ei2kvTq4CasKNTL7uIxgAIEx1eC7GvfjWBhcDYnVNpFhnahskwHWfY8QF1WfzgeamuGpvr6OtGdKEk9+OWAuXIIt4y78hdCbKT7e2XDfg2XHr+3p+3BC6oNXNfb7p1WjDbki4l8eXUqlIMWSOlWoOl13CNZ+bGW4NbwPbuZlcgVBLozlAsZaeTnFLeeyCOfuNOubPYNLAI2neyM9OlavWos9t0tHbgRo5Mp0W8fErwDwhLjwy5mOwN5YCj+nFDoW69h85/Xvfza5kH2hTAsv7SOHHiqeztd2ye03G14ZZjj/uqOKGIqI/H1/fHZuGrZVO58z3/CJsAZBzEf3CR+YVJm2wgt/bQ1T2RDalElBqAAk/Shk5WBuSgpJCpkB/taNusLbQNGbNYmwRSPd+rrdlrzazmrGRDQPjOErys0BzTvWacblJK1Gegh51JdAu/ObXPW1IEN6xzQU5grbqpa6XwKWfDr/QNNITP9L4hn6OogyvvlZtnHKu8zdnyGXCUTQBkWgp5O0ZHvb3lnBlAhL1os6LYbdXmwgEW8O52dmCIUfs3zqIUEmtLBzjDSTj3SL2C8nCIlH3dTvOaQ==" };
+  const STORE = "portfolio-password";
+  const FOLDER_ICON = '<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path fill="currentColor" d="M3 6.5A2.5 2.5 0 0 1 5.5 4h4.1c.6 0 1.2.25 1.6.7L12.5 6h6A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11Z"/></svg>';
+  const $ = sel => document.querySelector(sel);
   const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  const $ = id => document.getElementById(id);
+  let key = null, manifest = null, blobUrl = null, current = 0;
+
+  async function deriveKey(password) {
+    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+    return crypto.subtle.deriveKey({ name: "PBKDF2", salt: bytes(SITE.salt), iterations: SITE.iterations, hash: "SHA-256" },
+      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+  }
+
+  async function decrypt(k, sealed) {
+    return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: sealed.slice(0, 12) }, k, sealed.slice(12)));
+  }
 
   async function unlock(password) {
-    const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
-    const key = await crypto.subtle.deriveKey(
-      { name: "PBKDF2", salt: bytes(P.salt), iterations: P.iterations, hash: "SHA-256" },
-      base, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-    const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: bytes(P.iv) }, key, bytes(P.data));
-    return new TextDecoder().decode(plain);
+    const k = await deriveKey(password);
+    const json = new TextDecoder().decode(await decrypt(k, bytes(SITE.manifest)));  // throws on a wrong password
+    key = k;
+    manifest = JSON.parse(json);
+    try { sessionStorage.setItem(STORE, password); } catch (e) { /* storage blocked: ask again next time */ }
   }
 
-  if (!window.crypto || !crypto.subtle) {
-    $("msg").textContent = "This browser cannot open the portfolio. Please use an up-to-date browser over HTTPS.";
-    $("unlock").disabled = true;
+  const show = view => ["profile", "gate", "projects"].forEach(v => { $("#view-" + v).hidden = v !== view; });
+  const sizeText = n => n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1) + " MB";
+  const extOf = name => { const m = name.match(/\.([^./]+)$/); return m ? m[1].toUpperCase().slice(0, 4) : "FILE"; };
+  const make = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
+
+  function renderGrid() {
+    $("#projects-title").textContent = "Projects";
+    $("#crumb-back").hidden = true;
+    $("#project").hidden = true;
+    const grid = $("#grid");
+    grid.hidden = false;
+    grid.textContent = "";
+    manifest.projects.forEach((p, i) => {
+      const a = make("a", "folder");
+      a.href = "#projects/" + i;
+      a.innerHTML = FOLDER_ICON;
+      a.append(make("span", "name", p.name), make("span", "count", p.files.length + (p.files.length === 1 ? " file" : " files")));
+      grid.append(a);
+    });
   }
 
-  $("form").addEventListener("submit", async event => {
-    event.preventDefault();
-    $("unlock").disabled = true;
-    $("msg").textContent = "";
+  function renderProject(pi) {
+    const p = manifest.projects[pi];
+    current = pi;
+    $("#projects-title").textContent = p.name;
+    $("#crumb-back").hidden = false;
+    $("#grid").hidden = true;
+    $("#project").hidden = false;
+    $("#project-about").innerHTML = p.about;
+    $("#project-about").hidden = !p.about;
+    const list = $("#files");
+    list.textContent = "";
+    if (!p.files.length) { list.append(make("li", "empty", "No files yet.")); return; }
+    p.files.forEach((f, fi) => {
+      const a = make("a", "file");
+      a.href = "#projects/" + pi + "/" + fi;
+      a.append(make("span", "badge", extOf(f.name)), make("span", "fname", f.name), make("span", "fsize", sizeText(f.size)));
+      const li = make("li");
+      li.append(a);
+      list.append(li);
+    });
+  }
+
+  async function openFile(pi, fi) {
+    const file = manifest.projects[pi].files[fi];
+    const body = $("#viewer-body"), download = $("#viewer-download");
+    $("#viewer-title").textContent = file.name;
+    body.textContent = "Loading…";
+    download.hidden = true;
+    $("#viewer").hidden = false;
+    document.body.style.overflow = "hidden";
     try {
-      $("content").innerHTML = await unlock($("password").value);
-      $("gate").hidden = true;
-      $("content").hidden = false;
-      window.scrollTo(0, 0);
-    } catch (error) {
-      $("msg").textContent = "Wrong password.";
-      $("unlock").disabled = false;
-      $("password").select();
+      const res = await fetch("files/" + file.id + ".enc");
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await decrypt(key, new Uint8Array(await res.arrayBuffer()));
+      if ($("#viewer").hidden) return;
+      blobUrl = URL.createObjectURL(new Blob([data], { type: file.type }));
+      let node;
+      if (file.kind === "image") { node = make("img"); node.src = blobUrl; node.alt = file.name; }
+      else if (file.kind === "video" || file.kind === "audio") { node = make(file.kind); node.src = blobUrl; node.controls = true; }
+      else if (file.kind === "pdf") { node = make("iframe"); node.src = blobUrl; node.title = file.name; }
+      else if (file.kind === "text") { node = make("pre", "", new TextDecoder().decode(data)); }
+      else { node = make("p", "muted", "No preview for this file type. Use Download."); }
+      body.textContent = "";
+      body.append(node);
+      download.href = blobUrl;
+      download.download = file.name.split("/").pop();
+      download.hidden = false;
+    } catch (err) {
+      body.textContent = location.protocol === "file:" ? "Files open only on the published site (https)." : "Could not open this file.";
     }
+  }
+
+  function closeViewer() {
+    $("#viewer").hidden = true;
+    $("#viewer-body").textContent = "";
+    document.body.style.overflow = "";
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+  }
+
+  function route() {
+    closeViewer();
+    const m = location.hash.match(/^#projects(?:\/(\d+))?(?:\/(\d+))?$/);
+    if (!m) { show("profile"); return; }
+    if (!manifest) { show("gate"); setTimeout(() => $("#password").focus(), 0); return; }
+    show("projects");
+    const pi = m[1] === undefined ? -1 : +m[1];
+    if (!manifest.projects[pi]) { renderGrid(); window.scrollTo(0, 0); return; }
+    renderProject(pi);
+    if (m[2] !== undefined && manifest.projects[pi].files[+m[2]]) openFile(pi, +m[2]);
+  }
+
+  $("#gate-form").addEventListener("submit", async event => {
+    event.preventDefault();
+    $("#unlock").disabled = true;
+    $("#gate-msg").textContent = "";
+    try { await unlock($("#password").value); route(); }
+    catch (err) { $("#gate-msg").textContent = "Wrong password."; $("#password").select(); }
+    finally { $("#unlock").disabled = false; }
   });
+  $("#viewer-close").addEventListener("click", () => { location.hash = "#projects/" + current; });
+  $("#viewer").addEventListener("click", event => { if (event.target === $("#viewer")) location.hash = "#projects/" + current; });
+  document.addEventListener("keydown", event => { if (event.key === "Escape" && !$("#viewer").hidden) location.hash = "#projects/" + current; });
+  window.addEventListener("hashchange", route);
+
+  (async function init() {
+    if (!window.crypto || !crypto.subtle) $("#gate-msg").textContent = "Please open this page in an up-to-date browser over https.";
+    const link = location.hash.match(/[?&]key=([^&]*)/);
+    let password = null;
+    if (link) {
+      password = decodeURIComponent(link[1]);
+      history.replaceState(null, "", location.pathname + location.search + location.hash.replace(/[?&]key=[^&]*/, ""));
+    } else {
+      try { password = sessionStorage.getItem(STORE); } catch (e) { /* storage blocked */ }
+    }
+    if (password) {
+      try { await unlock(password); }
+      catch (err) { if (link) $("#gate-msg").textContent = "The password in this link is not valid."; }
+    }
+    route();
+  })();
 </script>
 </body>
 </html>
