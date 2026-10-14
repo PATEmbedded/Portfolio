@@ -123,7 +123,7 @@ def main():
         about = folder / ABOUT
         entry = {"name": re.sub(r"^\d+[\s._-]*", "", folder.name), "about": "", "files": []}
         for path in sorted(p for p in folder.rglob("*") if p.is_file()):
-            if path == about or path.name.startswith("."):
+            if path.name.startswith((".", "_")):  # _about.md is the page; other _files (notes) stay private
                 continue
             data = path.read_bytes()
             size_mb = len(data) / 1_048_576

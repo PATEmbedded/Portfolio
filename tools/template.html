@@ -101,6 +101,16 @@
   .about code { font: .88em ui-monospace, Consolas, monospace; }
   .about pre { overflow-x: auto; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
   .about .mermaid { display: flex; justify-content: center; margin: 16px 0; overflow-x: auto; }
+  .about figure { margin: 16px 0; }
+  .about figure img { margin: 0 auto; }
+  .about figcaption { margin-top: 8px; text-align: center; font-size: .86rem; color: var(--muted); }
+  .about p:has(> figure + figure) { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; }
+  .about p:has(> figure + figure) figure { margin: 0; }
+  .about .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0; }
+  .about .stats div { padding: 14px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg); }
+  .about .stats b { display: block; font-size: 1.3rem; line-height: 1.25; white-space: nowrap; color: var(--accent); }
+  .about .stats span { font-size: .86rem; color: var(--muted); }
+  .about .lead { font-size: 1.05rem; }
   .section-title { margin: 0 0 10px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
   .files { list-style: none; margin: 0 0 40px; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .files li + li { border-top: 1px solid var(--line); }
@@ -337,6 +347,13 @@
 
   // Inline images and diagrams in a project page (_about.md).
   async function hydrate(pi, container) {
+    for (const img of container.querySelectorAll("img[data-file]")) {
+      if (img.alt && !img.closest("figure, table")) {  // the alt text becomes a visible caption
+        const figure = make("figure");
+        img.replaceWith(figure);
+        figure.append(img, make("figcaption", "", img.alt));
+      }
+    }
     for (const img of container.querySelectorAll("img[data-file]")) {
       const file = manifest.projects[pi].files[+img.dataset.file];
       try {
