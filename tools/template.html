@@ -82,6 +82,33 @@
             background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); transition: transform .12s, border-color .12s; }
   .folder:hover, .folder:focus-visible { transform: translateY(-2px); border-color: var(--accent); }
   .folder svg { color: var(--accent); margin-bottom: 6px; }
+  /* Locked (private) projects */
+  .locked-title { margin: 8px 0 14px; }
+  button.folder { font: inherit; text-align: left; width: 100%; }
+  .folder.locked { position: relative; overflow: hidden; cursor: pointer; }
+  .folder.locked .lock { display: grid; place-items: center; width: 46px; height: 46px; margin-bottom: 8px; border-radius: 12px;
+                         color: var(--accent); background: linear-gradient(135deg, var(--accent-soft), transparent); }
+  .folder.locked .lock svg { animation: lock-glow 3.2s ease-in-out infinite; }
+  .folder.locked .tag { font-size: .84rem; color: var(--muted); }
+  .folder.locked .private { position: absolute; top: 12px; right: 12px; padding: 3px 9px; border-radius: 999px; font-size: .66rem;
+                            font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); background: var(--accent-soft); }
+  .folder.locked::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+                          background: repeating-linear-gradient(135deg, transparent 0 11px, rgba(127, 127, 127, .055) 11px 22px); }
+  .folder.locked::before { content: ""; position: absolute; top: 0; left: -70%; width: 45%; height: 100%; pointer-events: none;
+                           background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .14), transparent); transform: skewX(-18deg);
+                           transition: left .9s ease; }
+  .folder.locked:hover::before, .folder.locked:focus-visible::before { left: 125%; }
+  .folder.locked:hover .lock svg, .folder.locked:focus-visible .lock svg { animation: lock-shake .55s ease; }
+  @keyframes lock-glow { 0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+                         50% { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 60%, transparent)); } }
+  @keyframes lock-shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 45% { transform: rotate(11deg); }
+                          70% { transform: rotate(-6deg); } }
+  .toast { position: fixed; left: 50%; bottom: 24px; z-index: 20; width: min(92vw, 460px); padding: 14px 18px; transform: translateX(-50%);
+           border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+           animation: toast-in .25s ease; }
+  .toast b { display: block; margin-bottom: 2px; }
+  @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  @media (prefers-reduced-motion: reduce) { .folder.locked .lock svg, .toast { animation: none; } .folder.locked::before { display: none; } }
   .folder .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; margin-bottom: 10px; border-radius: 10px; background: #ffffff; }
   .folder .name { font-weight: 600; }
   .folder .count { font-size: .88rem; color: var(--muted); }
@@ -297,6 +324,10 @@
       <span class="crumb"><a id="crumb-back" href="#projects">← All projects</a> · <a href="#">Profile</a></span>
     </div>
     <div id="grid" class="grid"></div>
+    <div id="locked-section" hidden>
+      <h2 class="section-title locked-title">More projects · private, details on request</h2>
+      <div id="locked-grid" class="grid"></div>
+    </div>
     <div id="project" hidden>
       <div id="project-about" class="card about"></div>
       <h2 id="files-title" class="section-title">Files</h2>
@@ -315,6 +346,8 @@
     <div id="viewer-body" class="viewer-body"></div>
   </div>
 </div>
+
+<div id="toast" class="toast" role="status" hidden></div>
 
 <footer class="wrap">© 2026 Pourya Afshintabar · All rights reserved · View-only, for recruitment</footer>
 
@@ -376,6 +409,36 @@
       a.append(make("span", "name", p.name), make("span", "count", p.files.length + (p.files.length === 1 ? " file" : " files")));
       grid.append(a);
     });
+    renderLocked();
+  }
+
+  const LOCK_ICON = '<svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path fill="currentColor" d="M12 2a5 5 0 0 0-5 5v3H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8a2 2 0 0 0-2-2h-1V7a5 5 0 0 0-5-5Zm-3 8V7a3 3 0 1 1 6 0v3H9Zm3 4a1.75 1.75 0 0 1 1 3.27V19h-2v-1.73A1.75 1.75 0 0 1 12 14Z"/></svg>';
+  let toastTimer = 0;
+
+  function renderLocked() {
+    const list = manifest.locked || [], grid = $("#locked-grid");
+    $("#locked-section").hidden = !list.length;
+    grid.textContent = "";
+    list.forEach(item => {
+      const card = make("button", "folder locked");
+      card.type = "button";
+      card.setAttribute("aria-label", item.name + " (private project)");
+      card.innerHTML = '<span class="lock">' + LOCK_ICON + '</span><span class="private">Private</span>';
+      card.append(make("span", "name", item.name), make("span", "tag", item.tag || ""));
+      card.addEventListener("click", () => showToast(item.name));
+      grid.append(card);
+    });
+  }
+
+  function showToast(name) {
+    const toast = $("#toast");
+    toast.textContent = "";
+    const mail = make("a", "", "Ask me about it");
+    mail.href = "mailto:pouryaafshintabar@gmail.com?subject=" + encodeURIComponent("Question about: " + name);
+    toast.append(make("b", "", name + " is private"), make("span", "", "Details are not published here — happy to walk you through it in an interview. "), mail);
+    toast.hidden = false;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.hidden = true; }, 6000);
   }
 
   const covers = {};
@@ -426,6 +489,7 @@
     $("#projects-title").textContent = p.name;
     $("#crumb-back").hidden = false;
     $("#grid").hidden = true;
+    $("#locked-section").hidden = true;
     $("#project").hidden = false;
     if (changed || !$("#project-about").dataset.rendered) {
       inlineUrls.forEach(URL.revokeObjectURL);

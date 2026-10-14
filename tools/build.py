@@ -159,7 +159,10 @@ def main():
         if stale.is_file() and stale.name not in written:
             stale.unlink()
 
-    manifest = json.dumps({"projects": projects}, ensure_ascii=False).encode("utf-8")
+    # Private projects: shown as locked folders (name and one line only), listed in private/locked.json.
+    locked_file = ROOT / "private" / "locked.json"
+    locked = json.loads(locked_file.read_text(encoding="utf-8")) if locked_file.exists() else []
+    manifest = json.dumps({"projects": projects, "locked": locked}, ensure_ascii=False).encode("utf-8")
     page = (
         TEMPLATE.read_text(encoding="utf-8")
         .replace("{{SALT}}", base64.b64encode(salt).decode("ascii"))
