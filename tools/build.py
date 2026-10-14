@@ -6,10 +6,11 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          ciphertext. An optional _about.md in a project folder is shown at the top of that project.
          A leading number in a folder name ("01 Remeet 2") sets the order and is not shown.
 
-Usage, from the repository root:
-    python tools/build.py        # asks for the password, writes index.html and files/
+Usage: double-click Publish.bat (builds and pushes), or from the repository root:
+    python tools/build.py        # writes index.html and files/
+The password comes from PORTFOLIO_PASSWORD, else private/password.txt (git-ignored), else a prompt.
 Share link that opens the projects directly:  https://patembedded.github.io/Portfolio/#projects?key=PASSWORD
-PORTFOLIO_PASSWORD skips the prompt (for tests). Requires: pip install cryptography markdown
+Requires: pip install cryptography markdown
 """
 import base64
 import getpass
@@ -29,6 +30,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "private" / "projects"
+PASSWORD_FILE = ROOT / "private" / "password.txt"
 TEMPLATE = ROOT / "tools" / "template.html"
 SALT_FILE = ROOT / "tools" / "salt.txt"
 OUT_FILES = ROOT / "files"
@@ -51,6 +53,8 @@ KINDS = {
 def ask_password():
     if os.environ.get("PORTFOLIO_PASSWORD"):
         return os.environ["PORTFOLIO_PASSWORD"]
+    if PASSWORD_FILE.exists() and PASSWORD_FILE.read_text(encoding="utf-8").strip():
+        return PASSWORD_FILE.read_text(encoding="utf-8").strip()
     while True:
         password = getpass.getpass("Portfolio password: ")
         if len(password) < 6:
