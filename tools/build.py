@@ -22,6 +22,7 @@ import os
 import re
 import sys
 from pathlib import Path
+from urllib.parse import unquote
 
 import markdown
 from cryptography.hazmat.primitives import hashes
@@ -94,6 +95,23 @@ def mime_of(path, kind):
     return mimetypes.guess_type(path.name)[0] or "application/octet-stream"
 
 
+def link_files(html, project_index, files):
+    """Let _about.md use the project's own files: ![photo](front-panel.png) shows the encrypted image inline,
+    [datasheet](gateway-datasheet.pdf) opens it in the viewer."""
+    index = {f["name"]: i for i, f in enumerate(files)}
+
+    def image(match):
+        i = index.get(unquote(match.group(2)))
+        return match.group(0) if i is None else f'{match.group(1)} data-file="{i}"'
+
+    def link(match):
+        i = index.get(unquote(match.group(1)))
+        return match.group(0) if i is None else f'href="#projects/{project_index}/{i}"'
+
+    html = re.sub(r'(<img\b[^>]*?)\s+src="([^"]+)"', image, html)
+    return re.sub(r'href="([^"#:]+)"', link, html)
+
+
 def main():
     if not PROJECTS.is_dir():
         sys.exit(f"missing {PROJECTS}")
@@ -103,12 +121,7 @@ def main():
     projects, written, total = [], set(), 0
     for folder in sorted(p for p in PROJECTS.iterdir() if p.is_dir()):
         about = folder / ABOUT
-        entry = {
-            "name": re.sub(r"^\d+[\s._-]*", "", folder.name),
-            "about": markdown.markdown(about.read_text(encoding="utf-8"), extensions=["tables", "sane_lists"])
-            if about.exists() else "",
-            "files": [],
-        }
+        entry = {"name": re.sub(r"^\d+[\s._-]*", "", folder.name), "about": "", "files": []}
         for path in sorted(p for p in folder.rglob("*") if p.is_file()):
             if path == about or path.name.startswith("."):
                 continue
@@ -129,6 +142,10 @@ def main():
             kind = kind_of(path)
             entry["files"].append({"name": path.relative_to(folder).as_posix(), "id": file_id, "size": len(data),
                                    "kind": kind, "type": mime_of(path, kind)})
+        if about.exists():
+            html = markdown.markdown(about.read_text(encoding="utf-8"),
+                                     extensions=["tables", "fenced_code", "sane_lists", "md_in_html"])
+            entry["about"] = link_files(html, len(projects), entry["files"])
         projects.append(entry)
 
     for stale in OUT_FILES.iterdir():

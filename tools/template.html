@@ -84,9 +84,23 @@
   .folder svg { color: var(--accent); margin-bottom: 6px; }
   .folder .name { font-weight: 600; }
   .folder .count { font-size: .88rem; color: var(--muted); }
-  .about { margin-bottom: 20px; }
-  .about :first-child { margin-top: 0; }
-  .about :last-child { margin-bottom: 0; }
+  .about { margin-bottom: 24px; padding: 28px; }
+  .about > :first-child { margin-top: 0; }
+  .about > :last-child { margin-bottom: 0; }
+  .about h2 { margin: 2em 0 .6em; padding-bottom: 6px; font-size: 1.3rem; border-bottom: 1px solid var(--line); }
+  .about h3 { margin: 1.6em 0 .5em; font-size: 1.05rem; }
+  .about img { display: block; max-width: 100%; height: auto; margin: 16px auto; border-radius: 10px; }
+  .about img[data-file]:not([src]) { min-height: 160px; background: var(--accent-soft); }
+  .about table { display: block; overflow-x: auto; border-collapse: collapse; margin: 12px 0; font-size: .93rem; }
+  .about th, .about td { padding: 7px 12px; border: 1px solid var(--line); text-align: left; vertical-align: top; }
+  .about th { background: var(--accent-soft); }
+  .about thead:has(th:empty) { display: none; }
+  .about blockquote { margin: 16px 0; padding: 10px 18px; border-left: 4px solid var(--accent); background: var(--accent-soft); border-radius: 0 10px 10px 0; }
+  .about blockquote p { margin: .3em 0; }
+  .about code { font: .88em ui-monospace, Consolas, monospace; }
+  .about pre { overflow-x: auto; padding: 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .about .mermaid { display: flex; justify-content: center; margin: 16px 0; overflow-x: auto; }
+  .section-title { margin: 0 0 10px; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
   .files { list-style: none; margin: 0 0 40px; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
   .files li + li { border-top: 1px solid var(--line); }
   .file { display: flex; align-items: center; gap: 14px; padding: 12px 16px; text-decoration: none; color: var(--text); }
@@ -232,6 +246,7 @@
     <div id="grid" class="grid"></div>
     <div id="project" hidden>
       <div id="project-about" class="card about"></div>
+      <h2 id="files-title" class="section-title">Files</h2>
       <ul id="files" class="files"></ul>
     </div>
   </div>
@@ -257,7 +272,8 @@
   const FOLDER_ICON = '<svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path fill="currentColor" d="M3 6.5A2.5 2.5 0 0 1 5.5 4h4.1c.6 0 1.2.25 1.6.7L12.5 6h6A2.5 2.5 0 0 1 21 8.5v9a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11Z"/></svg>';
   const $ = sel => document.querySelector(sel);
   const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  let key = null, manifest = null, blobUrl = null, current = 0;
+  const MERMAID = "https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.esm.min.mjs";
+  let key = null, manifest = null, blobUrl = null, current = 0, inlineUrls = [];
 
   async function deriveKey(password) {
     const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
@@ -298,15 +314,50 @@
     });
   }
 
+  async function fileBytes(file) {
+    const res = await fetch("files/" + file.id + ".enc");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    return decrypt(key, new Uint8Array(await res.arrayBuffer()));
+  }
+
+  // Inline images and diagrams in a project page (_about.md).
+  async function hydrate(pi, container) {
+    for (const img of container.querySelectorAll("img[data-file]")) {
+      const file = manifest.projects[pi].files[+img.dataset.file];
+      try {
+        const url = URL.createObjectURL(new Blob([await fileBytes(file)], { type: file.type }));
+        inlineUrls.push(url);
+        img.src = url;
+      } catch (err) { img.alt = img.alt + " (image unavailable)"; }
+    }
+    const blocks = [...container.querySelectorAll("code.language-mermaid")];
+    if (!blocks.length) return;
+    try {
+      const { default: mermaid } = await import(MERMAID);
+      const dark = matchMedia("(prefers-color-scheme: dark)").matches;
+      mermaid.initialize({ startOnLoad: false, theme: dark ? "dark" : "default" });
+      const nodes = blocks.map(code => { const div = make("div", "mermaid", code.textContent); code.parentElement.replaceWith(div); return div; });
+      await mermaid.run({ nodes });
+    } catch (err) { /* offline or blocked: the diagram stays as text */ }
+  }
+
   function renderProject(pi) {
     const p = manifest.projects[pi];
+    const changed = current !== pi || $("#project").hidden;
     current = pi;
     $("#projects-title").textContent = p.name;
     $("#crumb-back").hidden = false;
     $("#grid").hidden = true;
     $("#project").hidden = false;
-    $("#project-about").innerHTML = p.about;
-    $("#project-about").hidden = !p.about;
+    if (changed || !$("#project-about").dataset.rendered) {
+      inlineUrls.forEach(URL.revokeObjectURL);
+      inlineUrls = [];
+      $("#project-about").innerHTML = p.about;
+      $("#project-about").hidden = !p.about;
+      $("#project-about").dataset.rendered = pi;
+      if (p.about) hydrate(pi, $("#project-about"));
+    }
+    $("#files-title").hidden = !p.files.length;
     const list = $("#files");
     list.textContent = "";
     if (!p.files.length) { list.append(make("li", "empty", "No files yet.")); return; }
@@ -329,9 +380,7 @@
     $("#viewer").hidden = false;
     document.body.style.overflow = "hidden";
     try {
-      const res = await fetch("files/" + file.id + ".enc");
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await decrypt(key, new Uint8Array(await res.arrayBuffer()));
+      const data = await fileBytes(file);
       if ($("#viewer").hidden) return;
       blobUrl = URL.createObjectURL(new Blob([data], { type: file.type }));
       let node;
