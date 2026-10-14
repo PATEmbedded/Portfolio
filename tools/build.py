@@ -143,9 +143,16 @@ def main():
             entry["files"].append({"name": path.relative_to(folder).as_posix(), "id": file_id, "size": len(data),
                                    "kind": kind, "type": mime_of(path, kind)})
         if about.exists():
-            html = markdown.markdown(about.read_text(encoding="utf-8"),
-                                     extensions=["tables", "fenced_code", "sane_lists", "md_in_html"])
+            text = about.read_text(encoding="utf-8")
+            title = re.match(r"\s*#\s+(.+)\n", text)  # a leading "# Title" names the project
+            if title:
+                entry["name"], text = title.group(1).strip(), text[title.end():]
+            html = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists", "md_in_html"])
             entry["about"] = link_files(html, len(projects), entry["files"])
+        # Card picture: a file named cover.*, else the first picture on the project page.
+        covers = [i for i, f in enumerate(entry["files"]) if Path(f["name"]).stem.lower() == "cover" and f["kind"] == "image"]
+        first = re.search(r'data-file="(\d+)"', entry["about"])
+        entry["cover"] = covers[0] if covers else int(first.group(1)) if first else -1
         projects.append(entry)
 
     for stale in OUT_FILES.iterdir():

@@ -82,6 +82,7 @@
             background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); transition: transform .12s, border-color .12s; }
   .folder:hover, .folder:focus-visible { transform: translateY(-2px); border-color: var(--accent); }
   .folder svg { color: var(--accent); margin-bottom: 6px; }
+  .folder .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; margin-bottom: 10px; border-radius: 10px; background: #ffffff; }
   .folder .name { font-weight: 600; }
   .folder .count { font-size: .88rem; color: var(--muted); }
   .about { margin-bottom: 24px; padding: 28px; }
@@ -308,10 +309,24 @@
     manifest.projects.forEach((p, i) => {
       const a = make("a", "folder");
       a.href = "#projects/" + i;
-      a.innerHTML = FOLDER_ICON;
+      if (p.cover >= 0) {
+        const img = make("img", "cover");
+        img.alt = p.name;
+        a.append(img);
+        coverUrl(i).then(url => { img.src = url; }).catch(() => img.remove());
+      } else {
+        a.innerHTML = FOLDER_ICON;
+      }
       a.append(make("span", "name", p.name), make("span", "count", p.files.length + (p.files.length === 1 ? " file" : " files")));
       grid.append(a);
     });
+  }
+
+  const covers = {};
+  function coverUrl(pi) {
+    const file = manifest.projects[pi].files[manifest.projects[pi].cover];
+    covers[pi] = covers[pi] || fileBytes(file).then(data => URL.createObjectURL(new Blob([data], { type: file.type })));
+    return covers[pi];
   }
 
   async function fileBytes(file) {
@@ -406,7 +421,16 @@
     if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
   }
 
-  function route() {
+  async function route() {
+    // A share link (#projects?key=PASSWORD) unlocks the projects; the password is then removed from the address bar.
+    const link = location.hash.match(/[?&]key=([^&]*)/);
+    if (link) {
+      history.replaceState(null, "", location.pathname + location.search + location.hash.replace(/[?&]key=[^&]*/, ""));
+      if (!manifest) {
+        try { await unlock(decodeURIComponent(link[1])); }
+        catch (err) { $("#gate-msg").textContent = "The password in this link is not valid."; }
+      }
+    }
     closeViewer();
     const m = location.hash.match(/^#projects(?:\/(\d+))?(?:\/(\d+))?$/);
     if (!m) { show("profile"); return; }
@@ -433,17 +457,10 @@
 
   (async function init() {
     if (!window.crypto || !crypto.subtle) $("#gate-msg").textContent = "Please open this page in an up-to-date browser over https.";
-    const link = location.hash.match(/[?&]key=([^&]*)/);
-    let password = null;
-    if (link) {
-      password = decodeURIComponent(link[1]);
-      history.replaceState(null, "", location.pathname + location.search + location.hash.replace(/[?&]key=[^&]*/, ""));
-    } else {
+    if (!/[?&]key=/.test(location.hash)) {
+      let password = null;
       try { password = sessionStorage.getItem(STORE); } catch (e) { /* storage blocked */ }
-    }
-    if (password) {
-      try { await unlock(password); }
-      catch (err) { if (link) $("#gate-msg").textContent = "The password in this link is not valid."; }
+      if (password) { try { await unlock(password); } catch (err) { /* stale password: ask again */ } }
     }
     route();
   })();
