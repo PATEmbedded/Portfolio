@@ -10,6 +10,7 @@
                                        2400 px on the long side. Smaller sources keep their size.
 
     --keep 3-11,20-24   video: keep only these parts (seconds) and join them
+    --add OTHER.mp4     cover: play another whole video after the first (repeat for more)
     --vf FILTERS        video: extra ffmpeg filters first, e.g. "eq=brightness=0.05:contrast=1.1", "deshake",
                         "crop=iw*0.8:ih*0.8", "setpts=0.5*PTS" (2x speed; sound is dropped)
     --rotate 90|180|270 photo/video: turn clockwise (photos are first set upright from their camera tag)
@@ -112,12 +113,21 @@ def cover(args):
     folder = find_folder(args.project)
     if is_video(args.source):
         target = folder / "_cover.mp4"
-        # whole frame in the middle, a blurred, filled copy behind it: nothing of the video is cut off
-        vchain = [",".join(video_pre(args) + ["split[b0][f0]"])
-                  + ";[b0]" + FILL.format(w=720, h=450) + ",boxblur=20:2,eq=brightness=-0.08[b1]"
-                  + ";[f0]scale=720:450:force_original_aspect_ratio=decrease[f1]"
-                  + ";[b1][f1]overlay=(W-w)/2:(H-h)/2,fps=24,format=yuv420p"]
-        cmd = FFMPEG + ["-i", str(args.source)] + graph(args.keep, vchain, False)
+
+        def framed(i):
+            # whole frame in the middle, a blurred, filled copy behind it: nothing of the video is cut off
+            return (",".join(video_pre(args) + [f"split[b{i}][f{i}]"])
+                    + f";[b{i}]" + FILL.format(w=720, h=450) + f",boxblur=20:2,eq=brightness=-0.08[bb{i}]"
+                    + f";[f{i}]scale=720:450:force_original_aspect_ratio=decrease[ff{i}]"
+                    + f";[bb{i}][ff{i}]overlay=(W-w)/2:(H-h)/2,fps=24,format=yuv420p,setsar=1")
+        sources = [args.source] + (args.add or [])
+        cmd = FFMPEG + [arg for s in sources for arg in ("-i", str(s))]
+        if len(sources) == 1:
+            cmd += graph(args.keep, [framed(0)], False)
+        else:  # several videos, each whole, one after the other
+            parts = [f"[{i}:v]{framed(i)}[c{i}]" for i in range(len(sources))]
+            joined = "".join(f"[c{i}]" for i in range(len(sources))) + f"concat=n={len(sources)}:v=1:a=0[v]"
+            cmd += ["-filter_complex", ";".join(parts + [joined]), "-map", "[v]", "-an"]
         cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "30", "-movflags", "+faststart"]
         tmp = run(cmd, target)
     else:
@@ -160,6 +170,7 @@ def main():
         p.add_argument("--vf")
         p.add_argument("--every", type=float)
         p.add_argument("--rotate", type=int, choices=(90, 180, 270))
+        p.add_argument("--add", type=Path, action="append", help="cover: another video to play after it (repeat)")
         p.add_argument("--mute", action="store_true")
     args = parser.parse_args()
     if not args.source.is_file():
