@@ -2,6 +2,7 @@
 
     python tools/watch.py --save   remember the current state (after the new files are handled and published)
     python tools/watch.py          wait for a change, let copying finish (no change for 20 s), print it, exit
+    python tools/watch.py --diff   print the changes since --save now, without waiting
 """
 import json
 import sys
@@ -29,11 +30,11 @@ def main():
         return
     saved = json.loads(STATE.read_text(encoding="utf-8")) if STATE.exists() else {}
     current = snapshot()
-    while current == saved:
+    while current == saved and "--diff" not in sys.argv:
         time.sleep(POLL)
         current = snapshot()
     stable_since = time.time()
-    while time.time() - stable_since < SETTLE:
+    while time.time() - stable_since < SETTLE and "--diff" not in sys.argv:
         time.sleep(POLL)
         latest = snapshot()
         if latest != current:
