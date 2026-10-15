@@ -9,11 +9,13 @@
                                        2400 px on the long side. Smaller sources keep their size.
 
     --keep 3-11,20-24   video: keep only these parts (seconds) and join them
-    --vf FILTERS        video/photo: extra ffmpeg filters first, e.g. "eq=brightness=0.05:contrast=1.1", "deshake",
+    --vf FILTERS        video: extra ffmpeg filters first, e.g. "eq=brightness=0.05:contrast=1.1", "deshake",
                         "crop=iw*0.8:ih*0.8", "setpts=0.5*PTS" (2x speed; sound is dropped)
+    --rotate 90|180|270 photo/video: turn clockwise (photos are first set upright from their camera tag)
     --mute              web video: drop the sound
 
-PROJECT is the folder number (07) or its full name. Run from the repository root. Requires: pip install imageio-ffmpeg
+PROJECT is the folder number (07) or its full name. Run from the repository root.
+Requires: pip install imageio-ffmpeg pillow
 """
 import argparse
 import re
@@ -22,6 +24,7 @@ import sys
 from pathlib import Path
 
 import imageio_ffmpeg
+from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "private" / "projects"
@@ -82,19 +85,39 @@ def sheet(args):
     print(f"{args.source.name}: {total:.1f} s; tile n (from 0, left to right) starts at n x {every} s -> {args.out}")
 
 
+def video_pre(args):
+    turn = {90: ["transpose=1"], 180: ["hflip", "vflip"], 270: ["transpose=2"]}.get(args.rotate, [])
+    return turn + ([args.vf] if args.vf else [])
+
+
+def photo(args, target, size=None, longest=None):
+    """Upright (camera tag), turned, then filled to size (centre crop) or shrunk to fit longest; saved as target."""
+    image = ImageOps.exif_transpose(Image.open(args.source))
+    if args.rotate:
+        image = image.rotate(-args.rotate, expand=True)
+    if size:
+        image = ImageOps.fit(image, size, Image.LANCZOS)
+    elif longest:
+        image.thumbnail((longest, longest), Image.LANCZOS)
+    tmp = target.with_name(target.stem + ".tmp" + target.suffix)
+    if target.suffix.lower() in (".jpg", ".jpeg"):
+        image.convert("RGB").save(tmp, quality=85, optimize=True, progressive=True)
+    else:
+        image.save(tmp, optimize=True)
+    return tmp
+
+
 def cover(args):
     folder = find_folder(args.project)
-    pre = [args.vf] if args.vf else []
     if is_video(args.source):
         target = folder / "_cover.mp4"
-        vchain = pre + [FILL.format(w=720, h=450), "fps=24", "format=yuv420p"]
+        vchain = video_pre(args) + [FILL.format(w=720, h=450), "fps=24", "format=yuv420p"]
         cmd = FFMPEG + ["-i", str(args.source)] + graph(args.keep, vchain, False)
         cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "30", "-movflags", "+faststart"]
+        tmp = run(cmd, target)
     else:
         target = folder / "_cover.jpg"
-        cmd = FFMPEG + ["-i", str(args.source), "-vf", ",".join(pre + [FILL.format(w=960, h=600)]),
-                        "-frames:v", "1", "-q:v", "4"]
-    tmp = run(cmd, target)
+        tmp = photo(args, target, size=(960, 600))
     for old in folder.glob("_cover.*"):
         if old != tmp:
             old.unlink()
@@ -104,20 +127,17 @@ def cover(args):
 
 def web(args):
     target = args.out
-    pre = [args.vf] if args.vf else []
     if is_video(args.source):
         sound = probe(args.source)[1] and not args.mute and "setpts" not in (args.vf or "")
-        vchain = pre + ["scale='min(1280,iw)':-2", "format=yuv420p"]
+        vchain = video_pre(args) + ["scale='min(1280,iw)':-2", "format=yuv420p"]
         cmd = FFMPEG + ["-i", str(args.source)] + graph(args.keep, vchain, sound)
         cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "26", "-movflags", "+faststart"]
         cmd += ["-c:a", "aac", "-b:a", "96k"] if sound else []
         target = target.with_suffix(".mp4")
+        tmp = run(cmd, target)
     else:
-        vf = pre + ["scale='if(gt(iw,ih),min(2400,iw),-2)':'if(gt(iw,ih),-2,min(2400,ih))'"]
-        cmd = FFMPEG + ["-i", str(args.source), "-vf", ",".join(vf), "-frames:v", "1"]
-        cmd += ["-q:v", "3"] if target.suffix.lower() in (".jpg", ".jpeg") else []
-    tmp = run(cmd, target)
-    if not (args.keep or args.vf) and tmp.stat().st_size >= args.source.stat().st_size and \
+        tmp = photo(args, target, longest=2400)
+    if not (args.keep or args.vf or args.rotate) and tmp.stat().st_size >= args.source.stat().st_size and \
             tmp.suffix.lower() == args.source.suffix.lower():
         tmp.write_bytes(args.source.read_bytes())  # already small: re-encoding would only lose quality
     tmp.replace(target)
@@ -134,6 +154,7 @@ def main():
         p.add_argument("--keep")
         p.add_argument("--vf")
         p.add_argument("--every", type=float)
+        p.add_argument("--rotate", type=int, choices=(90, 180, 270))
         p.add_argument("--mute", action="store_true")
     args = parser.parse_args()
     if not args.source.is_file():
