@@ -5,6 +5,8 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          is encrypted (AES-256-GCM, key from PBKDF2-SHA256) into files/, so the public repository holds only
          ciphertext. An optional _about.md in a project folder is shown at the top of that project.
          A leading number in a folder name ("01 Remeet 2") sets the order and is not shown.
+         A folder with no files yet (only _about.md, _tag.txt or other _files) is shown as a locked card:
+         its name and the one line in _tag.txt. Adding the first file opens it.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
     python tools/build.py        # writes index.html and files/
@@ -38,6 +40,7 @@ OUT_FILES = ROOT / "files"
 OUT_PAGE = ROOT / "index.html"
 ITERATIONS = 250_000
 ABOUT = "_about.md"
+TAG = "_tag.txt"  # one line under the name of a locked (no files yet) project card
 EXT = ".enc"  # not ".bin": Microsoft Edge blocks fetch() of .bin URLs and downloads them instead
 WARN_MB, LIMIT_MB = 25, 95  # GitHub rejects files over 100 MB
 
@@ -118,13 +121,20 @@ def main():
     aes_key, mac_key = derive_keys(ask_password(), salt := load_salt())
     OUT_FILES.mkdir(exist_ok=True)
 
-    projects, written, total = [], set(), 0
+    projects, locked, written, total = [], [], set(), 0
     for folder in sorted(p for p in PROJECTS.iterdir() if p.is_dir()):
         about = folder / ABOUT
-        entry = {"name": re.sub(r"^\d+[\s._-]*", "", folder.name), "about": "", "files": []}
-        for path in sorted(p for p in folder.rglob("*") if p.is_file()):
-            if path.name.startswith((".", "_")):  # _about.md is the page; other _files (notes) stay private
-                continue
+        text = about.read_text(encoding="utf-8") if about.exists() else ""
+        title = re.match(r"\s*#\s+(.+)(?:\n|$)", text)  # a leading "# Title" names the project
+        name = title.group(1).strip() if title else re.sub(r"^\d+[\s._-]*", "", folder.name)
+        # _about.md is the page, _tag.txt the locked-card line; other _files (notes) stay private
+        paths = [p for p in sorted(folder.rglob("*")) if p.is_file() and not p.name.startswith((".", "_"))]
+        if not paths:
+            tag = folder / TAG
+            locked.append({"name": name, "tag": tag.read_text(encoding="utf-8").strip() if tag.exists() else ""})
+            continue
+        entry = {"name": name, "about": "", "files": []}
+        for path in paths:
             data = path.read_bytes()
             size_mb = len(data) / 1_048_576
             if size_mb > LIMIT_MB:
@@ -143,10 +153,8 @@ def main():
             entry["files"].append({"name": path.relative_to(folder).as_posix(), "id": file_id, "size": len(data),
                                    "kind": kind, "type": mime_of(path, kind)})
         if about.exists():
-            text = about.read_text(encoding="utf-8")
-            title = re.match(r"\s*#\s+(.+)\n", text)  # a leading "# Title" names the project
             if title:
-                entry["name"], text = title.group(1).strip(), text[title.end():]
+                text = text[title.end():]
             html = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists", "md_in_html"])
             entry["about"] = link_files(html, len(projects), entry["files"])
         # Card picture: a file named cover.*, else the first picture on the project page.
@@ -159,9 +167,6 @@ def main():
         if stale.is_file() and stale.name not in written:
             stale.unlink()
 
-    # Private projects: shown as locked folders (name and one line only), listed in private/locked.json.
-    locked_file = ROOT / "private" / "locked.json"
-    locked = json.loads(locked_file.read_text(encoding="utf-8")) if locked_file.exists() else []
     manifest = json.dumps({"projects": projects, "locked": locked}, ensure_ascii=False).encode("utf-8")
     page = (
         TEMPLATE.read_text(encoding="utf-8")
@@ -173,7 +178,8 @@ def main():
         sys.exit("template placeholder left unfilled")
     OUT_PAGE.write_text(page, encoding="utf-8")
     count = sum(len(p["files"]) for p in projects)
-    print(f"wrote index.html: {len(projects)} projects, {count} files, {total / 1_048_576:.1f} MB encrypted")
+    print(f"wrote index.html: {len(projects)} projects, {len(locked)} locked, {count} files, "
+          f"{total / 1_048_576:.1f} MB encrypted")
 
 
 if __name__ == "__main__":
