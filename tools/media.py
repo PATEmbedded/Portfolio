@@ -3,8 +3,9 @@
     sheet SOURCE OUT.jpg [--every S]   contact sheet of a video: one frame every S seconds, 5 per row, to pick
                                        the good part (tile n starts at n * S seconds; the times are printed)
     cover SOURCE PROJECT [--keep ..]   background of a locked card: video -> _cover.mp4 (720 x 450, 24 fps, no
-                                       sound, keep it under ~10 s), photo -> _cover.jpg (960 x 600). The source
-                                       fills the 16:10 frame, cropped at the centre. Older _cover.* is replaced.
+                                       sound; the whole frame is kept, on a blurred copy of itself where the
+                                       shape differs), photo -> _cover.jpg (960 x 600, cropped at the centre).
+                                       Older _cover.* is replaced.
     web SOURCE OUT [--keep ..]         file for a project page: video -> H.264 up to 1280 px wide, photo -> up to
                                        2400 px on the long side. Smaller sources keep their size.
 
@@ -111,7 +112,11 @@ def cover(args):
     folder = find_folder(args.project)
     if is_video(args.source):
         target = folder / "_cover.mp4"
-        vchain = video_pre(args) + [FILL.format(w=720, h=450), "fps=24", "format=yuv420p"]
+        # whole frame in the middle, a blurred, filled copy behind it: nothing of the video is cut off
+        vchain = [",".join(video_pre(args) + ["split[b0][f0]"])
+                  + ";[b0]" + FILL.format(w=720, h=450) + ",boxblur=20:2,eq=brightness=-0.08[b1]"
+                  + ";[f0]scale=720:450:force_original_aspect_ratio=decrease[f1]"
+                  + ";[b1][f1]overlay=(W-w)/2:(H-h)/2,fps=24,format=yuv420p"]
         cmd = FFMPEG + ["-i", str(args.source)] + graph(args.keep, vchain, False)
         cmd += ["-c:v", "libx264", "-preset", "slow", "-crf", "30", "-movflags", "+faststart"]
         tmp = run(cmd, target)
