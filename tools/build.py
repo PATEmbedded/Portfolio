@@ -5,10 +5,11 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          is encrypted (AES-256-GCM, key from PBKDF2-SHA256) into files/, so the public repository holds only
          ciphertext. An optional _about.md in a project folder is shown at the top of that project.
          A leading number in a folder name ("01 Remeet 2") sets the order and is not shown.
-         A folder with no files yet (only _about.md, _tag.txt or other _files) is shown as a locked card:
-         its name and the one line in _tag.txt. Adding the first file opens it. A _cover.jpg/.webp/.png or
-         _cover.mp4/.webm in a locked folder becomes the card's background (encrypted too); prepare it with
-         "tools/media.py cover" so it has the card's size. Files under a _folder (e.g. _originals/) stay private. A _group.txt (one heading) moves a small locked project out
+         A folder with a _tag.txt, or with no files yet, is shown as a locked card: its name and the one line
+         in _tag.txt; its other files are not published. Delete _tag.txt (and add files) to open it.
+         A _cover.jpg/.webp/.png or _cover.mp4/.webm in a locked folder becomes the card's background
+         (encrypted too); prepare it with "tools/media.py cover" so it has the card's size. Files under a
+         _folder (e.g. _originals/) stay private. A _group.txt (one heading) moves a small locked project out
          of the big cards into a compact list under that heading.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
@@ -155,8 +156,8 @@ def main():
         # _about.md is the page, _tag.txt the locked-card line; other _files and _folders (notes, originals) stay private
         paths = [p for p in sorted(folder.rglob("*"))
                  if p.is_file() and not any(part.startswith((".", "_", "~$")) for part in p.relative_to(folder).parts)]
-        if not paths:
-            tag = folder / TAG
+        tag = folder / TAG
+        if tag.exists() or not paths:  # a _tag.txt keeps the project locked whatever files are added
             card = {"name": name, "tag": tag.read_text(encoding="utf-8").strip() if tag.exists() else ""}
             if (folder / GROUP).exists():
                 card["group"] = (folder / GROUP).read_text(encoding="utf-8").strip()
