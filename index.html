@@ -106,11 +106,22 @@
                          50% { filter: drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 60%, transparent)); } }
   @keyframes lock-shake { 0%, 100% { transform: rotate(0); } 20% { transform: rotate(-14deg); } 45% { transform: rotate(11deg); }
                           70% { transform: rotate(-6deg); } }
-  .toast { position: fixed; left: 50%; bottom: 24px; z-index: 20; width: min(92vw, 460px); padding: 14px 18px; transform: translateX(-50%);
-           border-radius: 12px; border: 1px solid var(--line); background: var(--surface); color: var(--text); box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
-           animation: toast-in .25s ease; }
-  .toast b { display: block; margin-bottom: 2px; }
-  @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+  /* Access warning for a locked project: centred over a dimmed page, closes by itself */
+  .toast { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px;
+           background: rgba(5, 8, 14, .55); backdrop-filter: blur(3px); animation: toast-in .2s ease; }
+  .toast[hidden] { display: none; }
+  .toast .panel { position: relative; overflow: hidden; width: min(100%, 420px); padding: 28px 24px 22px; text-align: center; border-radius: 16px;
+                  border: 1px solid var(--line); background: var(--surface); color: var(--text); box-shadow: 0 20px 50px rgba(0, 0, 0, .35); }
+  .toast .icon { display: grid; place-items: center; width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%;
+                 color: var(--error); background: color-mix(in srgb, var(--error) 12%, transparent); }
+  .toast .icon svg { width: 28px; height: 28px; }
+  .toast .label { display: block; margin-bottom: 4px; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--error); }
+  .toast b { display: block; margin-bottom: 8px; font-size: 1.15rem; }
+  .toast p { margin: 0 0 18px; color: var(--muted); font-size: .95rem; }
+  .toast .timer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--error); transform-origin: left;
+                  animation: toast-timer var(--toast-ms, 5000ms) linear forwards; }
+  @keyframes toast-in { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   /* Locked card with a background picture or video (_cover.*): the lock sits on top, the media keeps playing */
   .folder.locked.has-media { aspect-ratio: 16 / 10; justify-content: flex-end; padding: 16px; color: #ffffff; background: #0b0f16; }
   .folder.locked.has-media .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
@@ -440,7 +451,7 @@
   </div>
 </div>
 
-<div id="toast" class="toast" role="status" hidden></div>
+<div id="toast" class="toast" role="alert" hidden></div>
 
 <footer class="wrap">© 2026 Pourya Afshintabar · All rights reserved · View-only, for recruitment</footer>
 
@@ -577,16 +588,27 @@
     return coverObserver;
   }
 
+  const TOAST_MS = 5000;
   function showToast(name) {
-    const toast = $("#toast");
+    const toast = $("#toast"), panel = make("div", "panel");
     toast.textContent = "";
-    const mail = make("a", "", "Ask me about it");
-    mail.href = "mailto:pouryaafshintabar@gmail.com?subject=" + encodeURIComponent("Question about: " + name);
-    toast.append(make("b", "", name + " is private"), make("span", "", "Details are not published here — happy to walk you through it in an interview. "), mail);
+    const mail = make("a", "btn primary", "Request access");
+    mail.href = "mailto:pouryaafshintabar@gmail.com?subject=" + encodeURIComponent("Access request: " + name);
+    const icon = make("span", "icon");
+    icon.innerHTML = LOCK_ICON;
+    panel.append(icon, make("span", "label", "Access restricted"), make("b", "", name),
+      make("p", "", "You do not have permission to view this project. Please ask Pourya Afshintabar for permission."), mail);
+    const timer = make("span", "timer");
+    timer.style.setProperty("--toast-ms", TOAST_MS + "ms");
+    panel.append(timer);
+    toast.append(panel);
     toast.hidden = false;
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.hidden = true; }, 6000);
+    toastTimer = setTimeout(hideToast, TOAST_MS);
   }
+  function hideToast() { clearTimeout(toastTimer); $("#toast").hidden = true; }
+  $("#toast").addEventListener("click", e => { if (e.target.id === "toast") hideToast(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape") hideToast(); });
 
   const covers = {};
   function coverUrl(pi) {
