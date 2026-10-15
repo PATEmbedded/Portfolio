@@ -111,7 +111,22 @@
            animation: toast-in .25s ease; }
   .toast b { display: block; margin-bottom: 2px; }
   @keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
-  @media (prefers-reduced-motion: reduce) { .folder.locked .lock svg, .toast { animation: none; } .folder.locked::before { display: none; } }
+  /* Locked card with a background picture or video (_cover.*): the lock sits on top, the media keeps playing */
+  .folder.locked.has-media { aspect-ratio: 16 / 10; justify-content: flex-end; padding: 16px; color: #ffffff; background: #0b0f16; }
+  .folder.locked.has-media .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
+                                    filter: brightness(.62) saturate(1.1); transition: transform .8s ease, filter .3s; }
+  .folder.locked.has-media:hover .media, .folder.locked.has-media:focus-visible .media { transform: scale(1.05); filter: brightness(.5) saturate(1.1); }
+  .folder.locked.has-media::after { background: linear-gradient(to top, rgba(5, 8, 14, .85), rgba(5, 8, 14, .1) 62%),
+                                                repeating-linear-gradient(135deg, transparent 0 11px, rgba(255, 255, 255, .04) 11px 22px); }
+  .folder.locked.has-media .lock { position: absolute; top: 50%; left: 50%; z-index: 1; width: 58px; height: 58px; margin: 0;
+                                   transform: translate(-50%, -62%); border-radius: 50%; color: #ffffff;
+                                   background: rgba(10, 14, 22, .55); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(4px); }
+  .folder.locked.has-media .lock svg { width: 28px; height: 28px; }
+  .folder.locked.has-media .name, .folder.locked.has-media .tag, .folder.locked.has-media .private { position: relative; z-index: 1; }
+  .folder.locked.has-media .private { position: absolute; color: #ffffff; background: rgba(10, 14, 22, .55); }
+  .folder.locked.has-media .tag { color: rgba(255, 255, 255, .8); }
+  @media (prefers-reduced-motion: reduce) { .folder.locked .lock svg, .toast { animation: none; } .folder.locked::before { display: none; }
+                                            .folder.locked.has-media .media { transition: none; } }
   .folder .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; margin-bottom: 10px; border-radius: 10px; background: #ffffff; }
   .folder .name { font-weight: 600; }
   .folder .count { font-size: .88rem; color: var(--muted); }
@@ -479,6 +494,7 @@
   function renderLocked() {
     const list = manifest.locked || [], grid = $("#locked-grid");
     $("#locked-section").hidden = !list.length;
+    if (coverObserver) coverObserver.disconnect();
     grid.textContent = "";
     list.forEach(item => {
       const card = make("button", "folder locked");
@@ -487,8 +503,36 @@
       card.innerHTML = '<span class="lock">' + LOCK_ICON + '</span><span class="private">Private</span>';
       card.append(make("span", "name", item.name), make("span", "tag", item.tag || ""));
       card.addEventListener("click", () => showToast(item.name));
+      if (item.cover) {
+        const media = make(item.cover.kind === "video" ? "video" : "img", "media");
+        media.setAttribute("aria-hidden", "true");
+        if (media.tagName === "VIDEO") { media.muted = true; media.loop = true; media.playsInline = true; }
+        else media.alt = "";
+        card.classList.add("has-media");
+        card.prepend(media);
+        media.dataset.cover = item.cover.id;
+        coverWatch().observe(media);
+      }
       grid.append(card);
     });
+  }
+
+  // Locked-card backgrounds load when they come into view; videos play only while visible.
+  const lockedMedia = {};
+  let coverObserver = null;
+  const stillOnly = matchMedia("(prefers-reduced-motion: reduce)");
+  function coverWatch() {
+    coverObserver = coverObserver || new IntersectionObserver(entries => entries.forEach(async ({ target, isIntersecting }) => {
+      const cover = (manifest.locked || []).find(c => c.cover && c.cover.id === target.dataset.cover).cover;
+      if (isIntersecting && !target.src) {
+        lockedMedia[cover.id] = lockedMedia[cover.id] || fileBytes(cover).then(data => URL.createObjectURL(new Blob([data], { type: cover.type })));
+        try { target.src = await lockedMedia[cover.id]; } catch (err) { target.remove(); return; }
+      }
+      if (target.tagName === "VIDEO") {
+        if (isIntersecting && !stillOnly.matches) target.play().catch(() => {}); else target.pause();
+      }
+    }), { rootMargin: "200px" });
+    return coverObserver;
   }
 
   function showToast(name) {

@@ -6,7 +6,9 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          ciphertext. An optional _about.md in a project folder is shown at the top of that project.
          A leading number in a folder name ("01 Remeet 2") sets the order and is not shown.
          A folder with no files yet (only _about.md, _tag.txt or other _files) is shown as a locked card:
-         its name and the one line in _tag.txt. Adding the first file opens it.
+         its name and the one line in _tag.txt. Adding the first file opens it. A _cover.jpg/.webp/.png or
+         _cover.mp4/.webm in a locked folder becomes the card's background (encrypted too); prepare it with
+         tools/cover.py so it has the card's size.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
     python tools/build.py        # writes index.html and files/
@@ -41,6 +43,7 @@ OUT_PAGE = ROOT / "index.html"
 ITERATIONS = 250_000
 ABOUT = "_about.md"
 TAG = "_tag.txt"  # one line under the name of a locked (no files yet) project card
+COVER = "_cover"  # background picture or video of a locked card
 EXT = ".enc"  # not ".bin": Microsoft Edge blocks fetch() of .bin URLs and downloads them instead
 WARN_MB, LIMIT_MB = 25, 95  # GitHub rejects files over 100 MB
 
@@ -122,6 +125,26 @@ def main():
     OUT_FILES.mkdir(exist_ok=True)
 
     projects, locked, written, total = [], [], set(), 0
+
+    def store(path):
+        """Encrypt one file into files/ and return its id."""
+        nonlocal total
+        data = path.read_bytes()
+        size_mb = len(data) / 1_048_576
+        if size_mb > LIMIT_MB:
+            sys.exit(f"{path} is {size_mb:.0f} MB; GitHub accepts files up to 100 MB")
+        if size_mb > WARN_MB:
+            print(f"warning: {path.name} is {size_mb:.0f} MB and will load slowly")
+        rel = path.relative_to(PROJECTS).as_posix()
+        file_id = hmac.new(mac_key, b"path:" + rel.encode(), hashlib.sha256).hexdigest()[:20]
+        sealed = seal(aes_key, mac_key, data)
+        target = OUT_FILES / f"{file_id}{EXT}"
+        if not target.exists() or target.read_bytes() != sealed:
+            target.write_bytes(sealed)
+        written.add(target.name)
+        total += len(data)
+        return file_id, len(data)
+
     for folder in sorted(p for p in PROJECTS.iterdir() if p.is_dir()):
         about = folder / ABOUT
         text = about.read_text(encoding="utf-8") if about.exists() else ""
@@ -131,26 +154,20 @@ def main():
         paths = [p for p in sorted(folder.rglob("*")) if p.is_file() and not p.name.startswith((".", "_"))]
         if not paths:
             tag = folder / TAG
-            locked.append({"name": name, "tag": tag.read_text(encoding="utf-8").strip() if tag.exists() else ""})
+            card = {"name": name, "tag": tag.read_text(encoding="utf-8").strip() if tag.exists() else ""}
+            # Card background: _cover.* (video first), encrypted like every other file
+            media = [p for p in folder.glob(COVER + ".*") if kind_of(p) in ("video", "image")]
+            if media:
+                path = min(media, key=lambda p: kind_of(p) != "video")
+                kind = kind_of(path)
+                card["cover"] = {"id": store(path)[0], "kind": kind, "type": mime_of(path, kind)}
+            locked.append(card)
             continue
         entry = {"name": name, "about": "", "files": []}
         for path in paths:
-            data = path.read_bytes()
-            size_mb = len(data) / 1_048_576
-            if size_mb > LIMIT_MB:
-                sys.exit(f"{path} is {size_mb:.0f} MB; GitHub accepts files up to 100 MB")
-            if size_mb > WARN_MB:
-                print(f"warning: {path.name} is {size_mb:.0f} MB and will load slowly")
-            rel = path.relative_to(PROJECTS).as_posix()
-            file_id = hmac.new(mac_key, b"path:" + rel.encode(), hashlib.sha256).hexdigest()[:20]
-            sealed = seal(aes_key, mac_key, data)
-            target = OUT_FILES / f"{file_id}{EXT}"
-            if not target.exists() or target.read_bytes() != sealed:
-                target.write_bytes(sealed)
-            written.add(target.name)
-            total += len(data)
+            file_id, size = store(path)
             kind = kind_of(path)
-            entry["files"].append({"name": path.relative_to(folder).as_posix(), "id": file_id, "size": len(data),
+            entry["files"].append({"name": path.relative_to(folder).as_posix(), "id": file_id, "size": size,
                                    "kind": kind, "type": mime_of(path, kind)})
         if about.exists():
             if title:
