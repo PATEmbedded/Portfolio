@@ -8,7 +8,8 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          A folder with no files yet (only _about.md, _tag.txt or other _files) is shown as a locked card:
          its name and the one line in _tag.txt. Adding the first file opens it. A _cover.jpg/.webp/.png or
          _cover.mp4/.webm in a locked folder becomes the card's background (encrypted too); prepare it with
-         tools/cover.py so it has the card's size.
+         tools/cover.py so it has the card's size. A _group.txt (one heading) moves a small locked project out
+         of the big cards into a compact list under that heading.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
     python tools/build.py        # writes index.html and files/
@@ -44,6 +45,7 @@ ITERATIONS = 250_000
 ABOUT = "_about.md"
 TAG = "_tag.txt"  # one line under the name of a locked (no files yet) project card
 COVER = "_cover"  # background picture or video of a locked card
+GROUP = "_group.txt"  # a locked project with a group is listed compactly under that heading, not as a big card
 EXT = ".enc"  # not ".bin": Microsoft Edge blocks fetch() of .bin URLs and downloads them instead
 WARN_MB, LIMIT_MB = 25, 95  # GitHub rejects files over 100 MB
 
@@ -155,6 +157,8 @@ def main():
         if not paths:
             tag = folder / TAG
             card = {"name": name, "tag": tag.read_text(encoding="utf-8").strip() if tag.exists() else ""}
+            if (folder / GROUP).exists():
+                card["group"] = (folder / GROUP).read_text(encoding="utf-8").strip()
             # Card background: _cover.* (video first), encrypted like every other file
             media = [p for p in folder.glob(COVER + ".*") if kind_of(p) in ("video", "image")]
             if media:

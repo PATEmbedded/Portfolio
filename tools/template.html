@@ -125,6 +125,19 @@
   .folder.locked.has-media .name, .folder.locked.has-media .tag, .folder.locked.has-media .private { position: relative; z-index: 1; }
   .folder.locked.has-media .private { position: absolute; color: #ffffff; background: rgba(10, 14, 22, .55); }
   .folder.locked.has-media .tag { color: rgba(255, 255, 255, .8); }
+  /* Earlier work: small locked projects as a compact list, grouped by field */
+  .earlier { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; padding-bottom: 40px; }
+  .earlier .group { padding: 18px 18px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
+  .earlier h3 { margin: 0 0 8px; font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .earlier ul { list-style: none; margin: 0; padding: 0; }
+  .earlier li + li { border-top: 1px solid var(--line); }
+  .earlier button { display: grid; grid-template-columns: 16px 1fr; gap: 2px 10px; width: 100%; padding: 9px 0; border: 0; background: none;
+                    font: inherit; text-align: left; color: var(--text); cursor: pointer; }
+  .earlier button svg { grid-row: span 2; width: 14px; height: 14px; margin-top: 3px; color: var(--muted); transition: color .15s; }
+  .earlier button:hover svg, .earlier button:focus-visible svg { color: var(--accent); }
+  .earlier button:hover .name, .earlier button:focus-visible .name { color: var(--accent); }
+  .earlier .name { font-size: .93rem; font-weight: 600; }
+  .earlier .tag { font-size: .8rem; color: var(--muted); }
   @media (prefers-reduced-motion: reduce) { .folder.locked .lock svg, .toast { animation: none; } .folder.locked::before { display: none; }
                                             .folder.locked.has-media .media { transition: none; } }
   .folder .cover { width: 100%; aspect-ratio: 16 / 10; object-fit: contain; margin-bottom: 10px; border-radius: 10px; background: #ffffff; }
@@ -404,6 +417,10 @@
       <h2 class="section-title locked-title">More projects · private, details on request</h2>
       <div id="locked-grid" class="grid"></div>
     </div>
+    <div id="earlier-section" hidden>
+      <h2 class="section-title locked-title">Earlier work · private, details on request</h2>
+      <div id="earlier" class="earlier"></div>
+    </div>
     <div id="project" hidden>
       <div id="project-about" class="card about"></div>
       <h2 id="files-title" class="section-title">Files</h2>
@@ -492,10 +509,12 @@
   let toastTimer = 0;
 
   function renderLocked() {
-    const list = manifest.locked || [], grid = $("#locked-grid");
+    const all = manifest.locked || [], grid = $("#locked-grid");
+    const list = all.filter(item => !item.group);
     $("#locked-section").hidden = !list.length;
     if (coverObserver) coverObserver.disconnect();
     grid.textContent = "";
+    renderEarlier(all.filter(item => item.group));
     list.forEach(item => {
       const card = make("button", "folder locked");
       card.type = "button";
@@ -514,6 +533,29 @@
         coverWatch().observe(media);
       }
       grid.append(card);
+    });
+  }
+
+  function renderEarlier(items) {
+    const box = $("#earlier"), groups = new Map();
+    $("#earlier-section").hidden = !items.length;
+    box.textContent = "";
+    items.forEach(item => groups.set(item.group, [...(groups.get(item.group) || []), item]));
+    groups.forEach((members, title) => {
+      const group = make("section", "group"), ul = make("ul");
+      members.forEach(item => {
+        const button = make("button");
+        button.type = "button";
+        button.setAttribute("aria-label", item.name + " (private project)");
+        button.innerHTML = LOCK_ICON;
+        button.append(make("span", "name", item.name), make("span", "tag", item.tag || ""));
+        button.addEventListener("click", () => showToast(item.name));
+        const li = make("li");
+        li.append(button);
+        ul.append(li);
+      });
+      group.append(make("h3", "", title), ul);
+      box.append(group);
     });
   }
 
@@ -595,6 +637,7 @@
     $("#crumb-back").hidden = false;
     $("#grid").hidden = true;
     $("#locked-section").hidden = true;
+    $("#earlier-section").hidden = true;
     $("#project").hidden = false;
     if (changed || !$("#project-about").dataset.rendered) {
       inlineUrls.forEach(URL.revokeObjectURL);
