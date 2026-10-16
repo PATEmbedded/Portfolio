@@ -183,7 +183,9 @@
   .about .mermaid { display: flex; justify-content: center; margin: 16px 0; overflow-x: auto; }
   .about figure { margin: 16px 0; }
   .about figure img { margin: 0 auto; }
-  .about video { display: block; width: 100%; max-height: 70vh; margin: 16px auto; border-radius: 10px; background: #000; }
+  .about video { display: block; width: 100%; max-height: 70vh; margin: 16px auto; border-radius: 10px; background: #000; cursor: pointer; }
+  .about .pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin: 16px 0; }
+  .about .pair figure { margin: 0; }
   .about figure video { margin: 0 auto; }
   /* Moving header of a project page (_hero.mp4) */
   .project-hero { position: relative; overflow: hidden; width: 100%; aspect-ratio: 16 / 9; max-height: 62vh; margin-bottom: 20px;
@@ -566,10 +568,11 @@
       const file = manifest.projects[pi].files[+img.dataset.file];
       if (file.kind === "video") {
         const video = make("video");
-        Object.assign(video, { controls: true, muted: true, loop: true, playsInline: true, preload: "none", disablePictureInPicture: true });
+        Object.assign(video, { muted: true, loop: true, playsInline: true, preload: "none", disablePictureInPicture: true });
         video.setAttribute("controlslist", "nodownload noplaybackrate");
         video.setAttribute("aria-label", img.alt || file.name);
         noSave(video);
+        video.addEventListener("click", () => (video.paused ? video.play() : video.pause()));
         img.replaceWith(video);
         lazyVideo(video, file);
         continue;
@@ -592,15 +595,19 @@
     } catch (err) { /* offline or blocked: the diagram stays as text */ }
   }
 
-  // Page videos load when they come near the screen.
+  // Page videos load when they come near the screen, play while they are in view and pause when they leave it.
   const videoObserver = new IntersectionObserver(entries => entries.forEach(async ({ target, isIntersecting }) => {
-    if (!isIntersecting || target.src) return;
-    videoObserver.unobserve(target);
-    try {
-      const url = URL.createObjectURL(new Blob([await fileBytes(target._file)], { type: target._file.type }));
-      inlineUrls.push(url);
-      target.src = url;
-    } catch (err) { target.replaceWith(make("p", "muted", "Video unavailable.")); }
+    target._inView = isIntersecting;
+    if (!isIntersecting) { target.pause(); return; }
+    if (!target.src && !target._loading) {
+      target._loading = true;
+      try {
+        const url = URL.createObjectURL(new Blob([await fileBytes(target._file)], { type: target._file.type }));
+        inlineUrls.push(url);
+        target.src = url;
+      } catch (err) { target.replaceWith(make("p", "muted", "Video unavailable.")); return; }
+    }
+    if (target._inView && target.src) target.play().catch(() => {});
   }), { rootMargin: "300px" });
   function lazyVideo(video, file) { video._file = file; videoObserver.observe(video); }
 
