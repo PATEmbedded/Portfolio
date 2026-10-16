@@ -10,7 +10,8 @@ Private: the projects in private/projects/ (git-ignored). Each sub-folder is one
          A _cover.jpg/.webp/.png or _cover.mp4/.webm in a locked folder becomes the card's background
          (encrypted too); prepare it with "tools/media.py cover" so it has the card's size. Files under a
          _folder (e.g. _originals/) stay private. A _group.txt (one heading) moves a small locked project out
-         of the big cards into a compact list under that heading.
+         of the big cards into a compact list under that heading. In an open project, _hero.mp4 plays as the
+         page's moving header. Pictures and videos are shown in the page only, never offered for download.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
     python tools/build.py        # writes index.html and files/
@@ -47,6 +48,7 @@ ABOUT = "_about.md"
 TAG = "_tag.txt"  # one line under the name of a locked (no files yet) project card
 COVER = "_cover"  # background picture or video of a locked card
 GROUP = "_group.txt"  # a locked project with a group is listed compactly under that heading, not as a big card
+HERO = "_hero"  # video that plays as the moving header of an open project's page
 EXT = ".enc"  # not ".bin": Microsoft Edge blocks fetch() of .bin URLs and downloads them instead
 WARN_MB, LIMIT_MB = 25, 95  # GitHub rejects files over 100 MB
 
@@ -180,10 +182,14 @@ def main():
                 text = text[title.end():]
             html = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists", "md_in_html"])
             entry["about"] = link_files(html, len(projects), entry["files"])
-        # Card picture: a file named cover.*, else the first picture on the project page.
+        # Card picture: a file named cover.*, else the first picture (not video) on the project page.
         covers = [i for i, f in enumerate(entry["files"]) if Path(f["name"]).stem.lower() == "cover" and f["kind"] == "image"]
-        first = re.search(r'data-file="(\d+)"', entry["about"])
-        entry["cover"] = covers[0] if covers else int(first.group(1)) if first else -1
+        shown = [int(i) for i in re.findall(r'data-file="(\d+)"', entry["about"]) if entry["files"][int(i)]["kind"] == "image"]
+        entry["cover"] = covers[0] if covers else shown[0] if shown else -1
+        # Moving header of the page: _hero.mp4 (or another video named _hero.*)
+        hero = [p for p in folder.glob(HERO + ".*") if kind_of(p) == "video"]
+        if hero:
+            entry["hero"] = {"id": store(hero[0])[0], "kind": "video", "type": mime_of(hero[0], "video")}
         projects.append(entry)
 
     for stale in OUT_FILES.iterdir():

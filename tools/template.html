@@ -175,6 +175,14 @@
   .about .mermaid { display: flex; justify-content: center; margin: 16px 0; overflow-x: auto; }
   .about figure { margin: 16px 0; }
   .about figure img { margin: 0 auto; }
+  .about video { display: block; width: 100%; max-height: 70vh; margin: 16px auto; border-radius: 10px; background: #000; }
+  .about figure video { margin: 0 auto; }
+  /* Moving header of a project page (_hero.mp4) */
+  .project-hero { position: relative; overflow: hidden; width: 100%; aspect-ratio: 16 / 9; max-height: 62vh; margin-bottom: 20px;
+                  border-radius: 14px; background: #000; box-shadow: var(--shadow); }
+  .project-hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .project-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+                         background: linear-gradient(to top, var(--bg) 0, transparent 22%); }
   .about figcaption { margin-top: 8px; text-align: center; font-size: .86rem; color: var(--muted); }
   .about p:has(> figure + figure) { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; }
   .about p:has(> figure + figure) figure { margin: 0; }
@@ -436,6 +444,9 @@
       <div id="earlier" class="earlier"></div>
     </div>
     <div id="project" hidden>
+      <div id="project-hero" class="project-hero" hidden>
+        <video muted loop playsinline preload="none" aria-hidden="true" disablepictureinpicture></video>
+      </div>
       <div id="project-about" class="card about"></div>
       <h2 id="files-title" class="section-title">Files</h2>
       <ul id="files" class="files"></ul>
@@ -487,15 +498,19 @@
   }
 
   const show = view => ["profile", "gate", "projects"].forEach(v => {
-    const el = $("#view-" + v), video = el.querySelector("video");
+    const el = $("#view-" + v);
     el.hidden = v !== view;
-    if (video) { if (v === view) video.play().catch(() => {}); else video.pause(); }
+    if (v !== view) { el.querySelectorAll("video").forEach(video => video.pause()); return; }
+    const backdrop = el.classList.contains("backdrop") ? el.querySelector("video") : el.querySelector(".backdrop video");
+    if (backdrop) backdrop.play().catch(() => {});
   });
   const sizeText = n => n < 1024 ? n + " B" : n < 1048576 ? Math.round(n / 1024) + " KB" : (n / 1048576).toFixed(1) + " MB";
   const extOf = name => { const m = name.match(/\.([^./]+)$/); return m ? m[1].toUpperCase().slice(0, 4) : "FILE"; };
   const make = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; };
 
   function renderGrid() {
+    $("#project-hero").hidden = true;
+    $("#project-hero video").pause();
     $("#projects-title").textContent = "Projects";
     $("#crumb-back").hidden = true;
     $("#project").hidden = true;
@@ -635,8 +650,21 @@
         figure.append(img, make("figcaption", "", img.alt));
       }
     }
+    // Pictures and videos are shown in the page only, with no download option.
+    const noSave = el => { el.draggable = false; el.addEventListener("contextmenu", e => e.preventDefault()); };
     for (const img of container.querySelectorAll("img[data-file]")) {
       const file = manifest.projects[pi].files[+img.dataset.file];
+      if (file.kind === "video") {
+        const video = make("video");
+        Object.assign(video, { controls: true, muted: true, loop: true, playsInline: true, preload: "none", disablePictureInPicture: true });
+        video.setAttribute("controlslist", "nodownload noplaybackrate");
+        video.setAttribute("aria-label", img.alt || file.name);
+        noSave(video);
+        img.replaceWith(video);
+        lazyVideo(video, file);
+        continue;
+      }
+      noSave(img);
       try {
         const url = URL.createObjectURL(new Blob([await fileBytes(file)], { type: file.type }));
         inlineUrls.push(url);
@@ -654,9 +682,35 @@
     } catch (err) { /* offline or blocked: the diagram stays as text */ }
   }
 
+  // Page videos load when they come near the screen.
+  const videoObserver = new IntersectionObserver(entries => entries.forEach(async ({ target, isIntersecting }) => {
+    if (!isIntersecting || target.src) return;
+    videoObserver.unobserve(target);
+    try {
+      const url = URL.createObjectURL(new Blob([await fileBytes(target._file)], { type: target._file.type }));
+      inlineUrls.push(url);
+      target.src = url;
+    } catch (err) { target.replaceWith(make("p", "muted", "Video unavailable.")); }
+  }), { rootMargin: "300px" });
+  function lazyVideo(video, file) { video._file = file; videoObserver.observe(video); }
+
+  const heroes = {};
+  function renderHero(p) {
+    const box = $("#project-hero"), video = box.querySelector("video");
+    box.hidden = !p.hero;
+    video.pause();
+    if (!p.hero) { video.removeAttribute("src"); return; }
+    heroes[p.hero.id] = heroes[p.hero.id] || fileBytes(p.hero).then(data => URL.createObjectURL(new Blob([data], { type: p.hero.type })));
+    heroes[p.hero.id].then(url => {
+      if (video.src !== url) video.src = url;
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) video.play().catch(() => {});
+    }).catch(() => { box.hidden = true; });
+  }
+
   function renderProject(pi) {
     const p = manifest.projects[pi];
     const changed = current !== pi || $("#project").hidden;
+    renderHero(p);
     current = pi;
     $("#projects-title").textContent = p.name;
     $("#crumb-back").hidden = false;
@@ -673,11 +727,12 @@
       $("#project-about").dataset.rendered = pi;
       if (p.about) hydrate(pi, $("#project-about"));
     }
-    $("#files-title").hidden = !p.files.length;
+    // Pictures and videos appear in the page itself; the list shows documents only.
+    const docs = p.files.map((f, fi) => [f, fi]).filter(([f]) => f.kind !== "image" && f.kind !== "video");
     const list = $("#files");
+    $("#files-title").hidden = list.hidden = !docs.length;
     list.textContent = "";
-    if (!p.files.length) { list.append(make("li", "empty", "No files yet.")); return; }
-    p.files.forEach((f, fi) => {
+    docs.forEach(([f, fi]) => {
       const a = make("a", "file");
       a.href = "#projects/" + pi + "/" + fi;
       a.append(make("span", "badge", extOf(f.name)), make("span", "fname", f.name), make("span", "fsize", sizeText(f.size)));
@@ -701,15 +756,22 @@
       blobUrl = URL.createObjectURL(new Blob([data], { type: file.type }));
       let node;
       if (file.kind === "image") { node = make("img"); node.src = blobUrl; node.alt = file.name; }
-      else if (file.kind === "video" || file.kind === "audio") { node = make(file.kind); node.src = blobUrl; node.controls = true; }
+      else if (file.kind === "video" || file.kind === "audio") {
+        node = make(file.kind); node.src = blobUrl; node.controls = true;
+        node.setAttribute("controlslist", "nodownload"); node.disablePictureInPicture = true;
+      }
       else if (file.kind === "pdf") { node = make("iframe"); node.src = blobUrl; node.title = file.name; }
       else if (file.kind === "text") { node = make("pre", "", new TextDecoder().decode(data)); }
       else { node = make("p", "muted", "No preview for this file type. Use Download."); }
       body.textContent = "";
       body.append(node);
-      download.href = blobUrl;
-      download.download = file.name.split("/").pop();
-      download.hidden = false;
+      if (file.kind === "image" || file.kind === "video") {   // pictures and videos are never offered for download
+        node.addEventListener("contextmenu", e => e.preventDefault());
+      } else {
+        download.href = blobUrl;
+        download.download = file.name.split("/").pop();
+        download.hidden = false;
+      }
     } catch (err) {
       body.textContent = location.protocol === "file:" ? "Files open only on the published site (https)." : "Could not open this file.";
     }
