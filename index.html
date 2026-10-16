@@ -123,19 +123,22 @@
   @keyframes toast-in { from { opacity: 0; } to { opacity: 1; } }
   @keyframes toast-timer { from { transform: scaleX(1); } to { transform: scaleX(0); } }
   /* Locked card with a background picture or video (_cover.*): the lock sits on top, the media keeps playing */
-  .folder.locked.has-media { aspect-ratio: 16 / 10; justify-content: flex-end; padding: 16px; color: #ffffff; background: #0b0f16; }
+  .folder.locked.has-media { aspect-ratio: 16 / 10; justify-content: flex-end; gap: 1px; padding: 10px 12px; color: #ffffff; background: #0b0f16; }
   .folder.locked.has-media .media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
-                                    filter: brightness(.62) saturate(1.1); transition: transform .8s ease, filter .3s; }
-  .folder.locked.has-media:hover .media, .folder.locked.has-media:focus-visible .media { transform: scale(1.05); filter: brightness(.5) saturate(1.1); }
-  .folder.locked.has-media::after { background: linear-gradient(to top, rgba(5, 8, 14, .85), rgba(5, 8, 14, .1) 62%),
-                                                repeating-linear-gradient(135deg, transparent 0 11px, rgba(255, 255, 255, .04) 11px 22px); }
-  .folder.locked.has-media .lock { position: absolute; top: 50%; left: 50%; z-index: 1; width: 58px; height: 58px; margin: 0;
-                                   transform: translate(-50%, -62%); border-radius: 50%; color: #ffffff;
-                                   background: rgba(10, 14, 22, .55); border: 1px solid rgba(255, 255, 255, .35); backdrop-filter: blur(4px); }
-  .folder.locked.has-media .lock svg { width: 28px; height: 28px; }
+                                    filter: brightness(.92) saturate(1.05); transition: transform .8s ease, filter .3s; }
+  .folder.locked.has-media:hover .media, .folder.locked.has-media:focus-visible .media { transform: scale(1.05); filter: brightness(.78) saturate(1.05); }
+  /* only a low band at the bottom is darkened, for the text; the rest of the video stays clear */
+  .folder.locked.has-media::after { background: linear-gradient(to top, rgba(5, 8, 14, .82) 0, rgba(5, 8, 14, .45) 20%, transparent 38%); }
+  .folder.locked.has-media .lock { position: absolute; top: 50%; left: 50%; z-index: 1; width: 46px; height: 46px; margin: 0;
+                                   transform: translate(-50%, -70%); border-radius: 50%; color: rgba(255, 255, 255, .9);
+                                   background: rgba(10, 14, 22, .22); border: 1px solid rgba(255, 255, 255, .45); backdrop-filter: blur(1.5px); }
+  .folder.locked.has-media .lock svg { width: 22px; height: 22px; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, .5)); }
   .folder.locked.has-media .name, .folder.locked.has-media .tag, .folder.locked.has-media .private { position: relative; z-index: 1; }
-  .folder.locked.has-media .private { position: absolute; color: #ffffff; background: rgba(10, 14, 22, .55); }
-  .folder.locked.has-media .tag { color: rgba(255, 255, 255, .8); }
+  .folder.locked.has-media .name, .folder.locked.has-media .tag { overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+                                                                  text-shadow: 0 1px 3px rgba(0, 0, 0, .7); }
+  .folder.locked.has-media .name { font-size: .9rem; }
+  .folder.locked.has-media .private { position: absolute; color: #ffffff; background: rgba(10, 14, 22, .4); }
+  .folder.locked.has-media .tag { font-size: .74rem; color: rgba(255, 255, 255, .85); }
   /* Earlier work: small locked projects as a compact list, grouped by field */
   .earlier { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; padding-bottom: 40px; }
   .earlier .group { padding: 18px 18px 10px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); }
@@ -257,7 +260,7 @@
         <p class="meta">Vienna, Austria · Rot-Weiß-Rot – Karte plus</p>
         <div class="actions">
           <a class="btn primary" href="#projects">View projects</a>
-          <a class="btn" href="mailto:pat.embedded@gmail.com">Email</a>
+          <a class="btn" href="mailto:pouryaafshintabar@gmail.com">Email</a>
           <a class="btn" href="https://www.linkedin.com/in/pourya-afshintabar/" target="_blank" rel="noopener">LinkedIn</a>
           <a class="btn" href="https://github.com/PATEmbedded" target="_blank" rel="noopener">GitHub</a>
         </div>
@@ -410,7 +413,7 @@
       <button id="unlock" class="btn primary" type="submit">Open projects</button>
       <p id="gate-msg" class="msg" role="alert"></p>
       <p class="request">No CV at hand? Email me and I'll send you the password:<br>
-        <a href="mailto:pat.embedded@gmail.com?subject=Portfolio%20password%20request&amp;body=Hello%20Pourya%2C%0A%0AI%20am%20%5Bname%5D%20from%20%5Bcompany%5D%20and%20would%20like%20to%20see%20your%20projects.%0A">pat.embedded@gmail.com</a></p>
+        <a href="mailto:pouryaafshintabar@gmail.com?subject=Portfolio%20password%20request&amp;body=Hello%20Pourya%2C%0A%0AI%20am%20%5Bname%5D%20from%20%5Bcompany%5D%20and%20would%20like%20to%20see%20your%20projects.%0A">pouryaafshintabar@gmail.com</a></p>
       <a class="back" href="#">← Back to profile</a>
     </form>
   </div>
@@ -593,7 +596,7 @@
     const toast = $("#toast"), panel = make("div", "panel");
     toast.textContent = "";
     const mail = make("a", "btn primary", "Request access");
-    mail.href = "mailto:pat.embedded@gmail.com?subject=" + encodeURIComponent("Access request: " + name);
+    mail.href = "mailto:pouryaafshintabar@gmail.com?subject=" + encodeURIComponent("Access request: " + name);
     const icon = make("span", "icon");
     icon.innerHTML = LOCK_ICON;
     panel.append(icon, make("span", "label", "Access restricted"), make("b", "", name),
