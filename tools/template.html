@@ -50,6 +50,18 @@
   .tiles .tile { position: relative; overflow: hidden; }
   .tiles .tile::before { content: ""; position: absolute; left: 0; top: 0; right: 0; height: 3px; background: linear-gradient(90deg, var(--accent), #FFC21A); }
   .tiles .tile strong { font-size: 1.05rem; }
+  .fi { display: grid; place-items: center; width: 42px; height: 42px; margin-bottom: 12px; border-radius: 12px; color: var(--accent); background: var(--accent-soft); }
+  .fi svg { width: 22px; height: 22px; }
+  .now { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; border-left: 4px solid #FFC21A; }
+  .now p { flex: 1 1 320px; }
+  .now-badge { padding: 4px 12px; border-radius: 999px; background: #FFC21A; color: #2A1600; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+  .work { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; }
+  .work a { display: block; overflow: hidden; color: inherit; text-decoration: none; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: var(--shadow); transition: transform .2s ease, box-shadow .2s ease; }
+  .work a:hover { transform: translateY(-3px); box-shadow: 0 10px 26px rgba(16, 24, 40, .14); }
+  .work img { display: block; width: 100%; height: 150px; object-fit: cover; background: var(--accent-soft); }
+  .work span { display: block; padding: 10px 12px 2px; font-weight: 700; }
+  .work small { display: block; padding: 0 12px 12px; color: var(--muted); font-size: .88rem; }
+  @media (prefers-reduced-motion: reduce) { .work a { transition: none; } .work a:hover { transform: none; } }
   .logos { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; }
   .logo-tile { display: flex; align-items: center; justify-content: center; height: 96px; padding: 14px 18px; border-radius: 12px;
                background: #ffffff; border: 1px solid var(--line); box-shadow: var(--shadow); }
