@@ -86,7 +86,16 @@
   /* Projects */
   .bar { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 12px; padding: 40px 0 20px; }
   .bar h1 { margin: 0; font-size: 1.7rem; }
-  .crumb { font-size: .95rem; }
+  .crumb { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 8px 18px 8px 12px; border-radius: 999px;
+              background: var(--accent); color: var(--accent-text); font-size: .95rem; font-weight: 700; text-decoration: none;
+              box-shadow: var(--shadow); border: 1px solid var(--accent); transition: transform .18s ease, box-shadow .2s ease; }
+  .back-btn svg { width: 20px; height: 20px; flex: none; }
+  .back-btn:hover { transform: translateX(-3px); box-shadow: 0 8px 22px rgba(16, 24, 40, .18); }
+  .back-btn.ghost { background: var(--surface); color: var(--accent); border-color: var(--line); }
+  .back-btn:focus-visible { outline: 3px solid #FFC21A; outline-offset: 3px; }
+  .back-btn[hidden] { display: none; }
+  @media (prefers-reduced-motion: reduce) { .back-btn { transition: none; } .back-btn:hover { transform: none; } }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; padding-bottom: 40px; }
   .folder { display: flex; flex-direction: column; gap: 4px; padding: 20px; border-radius: 14px; text-decoration: none; color: var(--text);
             background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow); transition: transform .12s, border-color .12s; }
@@ -320,7 +329,7 @@
   <div class="wrap">
     <div class="bar">
       <h1 id="projects-title">Projects</h1>
-      <span class="crumb"><a id="crumb-back" href="#projects">← All projects</a> · <a href="#">Profile</a></span>
+      <nav class="crumb" aria-label="Back navigation"><a id="crumb-back" class="back-btn" href="#projects"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg><span>All projects</span></a><a class="back-btn ghost" href="#"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg><span>Profile</span></a></nav>
     </div>
     <div id="grid" class="grid"></div>
     <div id="locked-section" hidden>
