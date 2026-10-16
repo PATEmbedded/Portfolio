@@ -1,22 +1,22 @@
 """Build the portfolio site for GitHub Pages.
 
-Public:  the profile page in tools/template.html, which every visitor sees.
-Private: the projects in private/projects/ (git-ignored). Each sub-folder is one project; every file in it
-         is encrypted (AES-256-GCM, key from PBKDF2-SHA256) into files/, so the public repository holds only
-         ciphertext. An optional _about.md in a project folder is shown at the top of that project.
-         A leading number in a folder name ("01 Remeet 2") sets the order and is not shown.
-         A folder with a _tag.txt, or with no files yet, is shown as a locked card: its name and the one line
-         in _tag.txt; its other files are not published. Delete _tag.txt (and add files) to open it.
-         A _cover.jpg/.webp/.png or _cover.mp4/.webm in a locked folder becomes the card's background
-         (encrypted too); prepare it with "tools/media.py cover" so it has the card's size. Files under a
-         _folder (e.g. _originals/) stay private. A _group.txt (one heading) moves a small locked project out
-         of the big cards into a compact list under that heading. In an open project, _hero.mp4 plays as the
-         page's moving header. Pictures and videos are shown in the page only, never offered for download.
+Everything a visitor can see is encrypted (AES-256-GCM, key from PBKDF2-SHA256); the public repository holds
+only ciphertext in index.html and files/. The password unlocks the whole site: profile, photos, videos and
+project folders. Without it the page shows only the password form.
+
+Plain-text sources (all git-ignored under private/):
+  private/profile.html    the profile page (an HTML fragment; sealed into the manifest)
+  private/site/          photo and video used by the profile (photo.jpg, hero.mp4, hero-poster.jpg)
+  private/projects/      one sub-folder per project; every file in it is encrypted into files/
+A project folder holds _about.md (its page; a leading "# Title" names it), _tag.txt (locked card line),
+_cover.* (card background), _group.txt (compact list heading), _hero.mp4 with _hero.txt (moving header).
+A folder with _tag.txt, or with no files yet, is a locked card. Files under a _folder stay private.
+Pictures and videos are shown in the page only, never offered for download.
 
 Usage: double-click Publish.bat (builds and pushes), or from the repository root:
     python tools/build.py        # writes index.html and files/
 The password comes from PORTFOLIO_PASSWORD, else private/password.txt (git-ignored), else a prompt.
-Share link that opens the projects directly:  https://patembedded.github.io/Portfolio/#projects?key=PASSWORD
+Share link that opens the site unlocked:  https://patembedded.github.io/Portfolio/#?key=PASSWORD
 Requires: pip install cryptography markdown
 """
 import base64
@@ -38,6 +38,8 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 ROOT = Path(__file__).resolve().parent.parent
 PROJECTS = ROOT / "private" / "projects"
+SITE_DIR = ROOT / "private" / "site"
+PROFILE = ROOT / "private" / "profile.html"
 PASSWORD_FILE = ROOT / "private" / "password.txt"
 TEMPLATE = ROOT / "tools" / "template.html"
 SALT_FILE = ROOT / "tools" / "salt.txt"
@@ -132,7 +134,7 @@ def main():
 
     projects, locked, written, total = [], [], set(), 0
 
-    def store(path):
+    def store(path, label=None):
         """Encrypt one file into files/ and return its id."""
         nonlocal total
         data = path.read_bytes()
@@ -141,7 +143,7 @@ def main():
             sys.exit(f"{path} is {size_mb:.0f} MB; GitHub accepts files up to 100 MB")
         if size_mb > WARN_MB:
             print(f"warning: {path.name} is {size_mb:.0f} MB and will load slowly")
-        rel = path.relative_to(PROJECTS).as_posix()
+        rel = label or path.relative_to(PROJECTS).as_posix()
         file_id = hmac.new(mac_key, b"path:" + rel.encode(), hashlib.sha256).hexdigest()[:20]
         sealed = seal(aes_key, mac_key, data)
         target = OUT_FILES / f"{file_id}{EXT}"
@@ -202,11 +204,26 @@ def main():
                 entry["hero"]["tag"] = lines[2]
         projects.append(entry)
 
+    if not PROFILE.exists():
+        sys.exit(f"missing {PROFILE}")
+
+    def asset(match):
+        # src="assets/photo.jpg" becomes data-src="<id>": the page decrypts the file after unlocking
+        name = match.group(2)
+        if not (SITE_DIR / name).is_file():
+            sys.exit(f"missing {SITE_DIR / name}")
+        return f'data-{match.group(1)}="{store(SITE_DIR / name, "site/" + name)[0]}"'
+
+    profile = re.sub(r'\b(src|poster)="assets/([^"]+)"', asset, PROFILE.read_text(encoding="utf-8"))
+    if "assets/" in profile:
+        sys.exit("the profile links to assets/ in a way the build cannot seal")
+
     for stale in OUT_FILES.iterdir():
         if stale.is_file() and stale.name not in written:
             stale.unlink()
 
-    manifest = json.dumps({"projects": projects, "locked": locked}, ensure_ascii=False).encode("utf-8")
+    manifest = json.dumps({"projects": projects, "locked": locked, "profile": profile},
+                          ensure_ascii=False).encode("utf-8")
     page = (
         TEMPLATE.read_text(encoding="utf-8")
         .replace("{{SALT}}", base64.b64encode(salt).decode("ascii"))

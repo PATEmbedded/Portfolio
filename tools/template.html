@@ -4,8 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="description" content="Pourya Afshintabar, Embedded Systems Engineer (hardware and firmware), Vienna, Austria.">
-<title>Pourya Afshintabar · Embedded Systems Engineer</title>
+<title>Portfolio</title>
 <style>
   :root {
     --bg: #f5f7fa; --surface: #ffffff; --text: #172033; --muted: #5a6478; --line: #e1e6ee;
@@ -254,7 +253,7 @@
   .backdrop { position: relative; overflow: hidden; background: #0b0f16; color: #ffffff; }
   .backdrop video, .backdrop .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .backdrop video { filter: saturate(1.2) brightness(.72); transform: scale(1.04); object-position: center 42%; }
-  .backdrop .poster { background: url("assets/hero-poster.jpg") center 42% / cover; filter: brightness(.72); }
+  .backdrop .poster { background: linear-gradient(135deg, #1d2d4a, #0b0f16); filter: brightness(.72); }
   .backdrop .shade { position: absolute; inset: 0;
     background: linear-gradient(90deg, rgba(8, 12, 20, .82) 0%, rgba(8, 12, 20, .45) 55%, rgba(8, 12, 20, .15) 100%),
                 linear-gradient(to bottom, rgba(8, 12, 20, 0) 60%, var(--bg)); }
@@ -286,178 +285,22 @@
 </head>
 <body>
 
-<!-- ===================== PUBLIC PROFILE (edit freely) ===================== -->
-<div id="view-profile">
-  <section class="backdrop">
-    <div class="poster"></div>
-    <video autoplay muted loop playsinline preload="auto" poster="assets/hero-poster.jpg" aria-hidden="true">
-      <source src="assets/hero.mp4" type="video/mp4">
-    </video>
-    <div class="shade"></div>
-    <div class="wrap">
-    <header class="hero">
-      <img class="photo" src="assets/photo.jpg" alt="Pourya Afshintabar">
-      <div>
-        <h1>Pourya Afshintabar</h1>
-        <p class="subtitle">Embedded Systems Engineer · Hardware &amp; Firmware</p>
-        <p class="meta">Vienna, Austria · Rot-Weiß-Rot – Karte plus</p>
-        <div class="actions">
-          <a class="btn primary" href="#projects">View projects</a>
-          <a class="btn" href="mailto:pouryaafshintabar@gmail.com">Email</a>
-          <a class="btn" href="https://www.linkedin.com/in/pourya-afshintabar/" target="_blank" rel="noopener">LinkedIn</a>
-          <a class="btn" href="https://github.com/PATEmbedded" target="_blank" rel="noopener">GitHub</a>
-        </div>
-      </div>
-    </header>
-    </div>
-  </section>
-  <div class="wrap">
-
-    <section class="card">
-      <h2>About</h2>
-      <p>Embedded Systems Engineer with extensive experience building industrial, oil &amp; gas, medical and IoT
-        products, and a growing focus on Edge AI. I write C/C++ firmware on bare metal, FreeRTOS and embedded Linux,
-        and take products from requirements and system architecture through bring-up and testing to series
-        production. I have also led hardware teams through analog/digital circuit and multilayer PCB design,
-        following IEC EMC and ATEX guidelines.</p>
-    </section>
-
-    <section class="card">
-      <h2>Highlights</h2>
-      <div class="tiles">
-        <div class="tile"><strong>Extensive experience</strong><span>Industrial, oil &amp; gas, medical and IoT products</span></div>
-        <div class="tile"><strong>Requirements → production</strong><span>Architecture, bring-up and testing through to series production</span></div>
-        <div class="tile"><strong>Standards-guided</strong><span>Hardware designed following IEC 61000, IEC 60068, IEC 62443 and ATEX guidelines</span></div>
-        <div class="tile"><strong>Edge AI</strong><span>99.54% on-device accuracy in 16.8 KB RAM; paper in preparation for IEEE TII</span></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Skills</h2>
-      <div class="skills">
-        <div class="skill-row"><b>Programming</b><div class="chips">
-          <span class="chip">C</span><span class="chip">C++ (11/14/17): STL, IPC, multithreading</span>
-          <span class="chip">Python: test automation, ML/AI, tooling</span><span class="chip">VHDL: Xilinx FPGA RTL design, digital logic</span></div></div>
-        <div class="skill-row"><b>Firmware</b><div class="chips">
-          <span class="chip">Bare metal</span><span class="chip">FreeRTOS</span><span class="chip">Embedded Linux</span>
-          <span class="chip">GCC</span><span class="chip">CMake</span><span class="chip">Yocto / Buildroot</span><span class="chip">Bash</span>
-          <span class="chip">DSP: FFT, FIR/IIR, PID, feature extraction</span></div></div>
-        <div class="skill-row"><b>Processors</b><div class="chips">
-          <span class="chip">ARM Cortex-M (ST, NXP, TI)</span><span class="chip">Cortex-A (TI Sitara, Allwinner)</span><span class="chip">Xtensa (ESP)</span>
-          <span class="chip">Xilinx FPGA (Spartan, Zynq, MicroBlaze)</span><span class="chip">RISC-V (GD32V)</span><span class="chip">DSP (TI C2000)</span></div></div>
-        <div class="skill-row"><b>Peripherals</b><div class="chips">
-          <span class="chip">Gigabit Ethernet</span><span class="chip">PoE</span><span class="chip">USB</span><span class="chip">SPI</span><span class="chip">DMA</span>
-          <span class="chip">I²C</span><span class="chip">CAN</span><span class="chip">HDMI</span><span class="chip">MIPI CSI-2/DSI</span><span class="chip">LVDS</span>
-          <span class="chip">RS-485/232</span><span class="chip">UART</span><span class="chip">PSRAM</span><span class="chip">ADC/DAC</span><span class="chip">SDIO</span></div></div>
-        <div class="skill-row"><b>IoT</b><div class="chips">
-          <span class="chip">MQTT</span><span class="chip">HTTP/REST</span><span class="chip">TCP/UDP</span><span class="chip">OTA</span><span class="chip">CoAP</span>
-          <span class="chip">JSON/CBOR</span><span class="chip">Cap'n Proto</span><span class="chip">TLS (mbedTLS)</span><span class="chip">AES</span>
-          <span class="chip">SHA</span><span class="chip">JWT</span><span class="chip">Wi-Fi</span><span class="chip">BLE</span><span class="chip">LoRa</span>
-          <span class="chip">GSM</span><span class="chip">2.4 GHz (nRF)</span></div></div>
-        <div class="skill-row"><b>Hardware</b><div class="chips">
-          <span class="chip">Altium Designer</span><span class="chip">Multilayer PCB</span><span class="chip">High-speed &amp; low-noise</span>
-          <span class="chip">Signal/power integrity</span><span class="chip">EMI/EMC</span><span class="chip">DFA/DFM/DFT</span><span class="chip">BOM optimization</span>
-          <span class="chip">Thermocouple (CJC)</span><span class="chip">Protection (ESD/surge/EFT, OVP/OCP)</span>
-          <span class="chip">Motor drivers (DC/stepper/servo)</span><span class="chip">V/I sensing (CT, shunt, Hall)</span>
-          <span class="chip">AC/DC: flyback, forward, push-pull</span><span class="chip">DC/DC: buck, boost</span></div></div>
-        <div class="skill-row"><b>Sensors</b><div class="chips">
-          <span class="chip">Accelerometer</span><span class="chip">Gyroscope</span><span class="chip">IMU (6/9-axis)</span><span class="chip">Camera/audio</span>
-          <span class="chip">Fingerprint</span><span class="chip">NFC/RFID</span><span class="chip">GPS/GNSS</span><span class="chip">Pressure</span><span class="chip">Touch/TFT</span></div></div>
-        <div class="skill-row"><b>Edge AI</b><div class="chips">
-          <span class="chip">Custom CNN</span><span class="chip">MobileNet</span><span class="chip">Quantization</span><span class="chip">Pruning</span>
-          <span class="chip">TensorFlow / TFLite Micro</span><span class="chip">PyTorch</span><span class="chip">ONNX</span><span class="chip">STM32CubeAI</span>
-          <span class="chip">Edge Impulse</span><span class="chip">Library-free pixel-level vision: detection, tracking</span>
-          <span class="chip">DSP</span><span class="chip">SIMD</span><span class="chip">CMSIS-NN</span></div></div>
-        <div class="skill-row"><b>Ways of working</b><div class="chips">
-          <span class="chip">Git</span><span class="chip">GitLab</span><span class="chip">Agile/Scrum</span></div></div>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Experience</h2>
-      <ul class="timeline">
-        <li><div class="when">07/2026 – Present</div><div class="role">Embedded Edge AI Researcher · Independent research</div>
-          <ul class="points">
-            <li>Designed and compared 50+ small neural networks for on-device flame detection, then built the best four
-              into an early-exit cascade in C++ on FreeRTOS that reaches 99.54% accuracy in 16.8 KB of RAM; now
-              evaluating FPGA and MCU platforms for it.</li>
-          </ul>
-          <div class="muted">P. Afshintabar and S. Nazari, “Cloud-Free, Low-Power Flame Detection on MCUs Using Early-Exit
-            TinyML,” in preparation for <i>IEEE TII</i>, 2026.</div></li>
-        <li><div class="when">10/2022 – 06/2026</div><div class="role">Senior Embedded Systems Engineer · <a href="https://novaday.ir/" target="_blank" rel="noopener">Novaday Co.</a></div>
-          <div class="muted">IoT startup building smart-office products.</div>
-          <ul class="points">
-            <li><b>Remeet 1 &amp; 2 meeting-room panels:</b> engineered the complete system, from architecture and PCB
-              design to embedded Linux drivers and a C++/C/Bash device-driver abstraction layer; led the production line
-              from prototype to field deployment.</li>
-            <li><b>Building Automation Controller:</b> sole engineer of a networked I/O device that lets the panels
-              control doors, read sensors and drive actuators; built the ESP32/STM32 hardware, FreeRTOS firmware and
-              C++ backend, with secure MQTT/REST connectivity and OTA updates.</li>
-          </ul></li>
-        <li><div class="when">09/2020 – 11/2021</div><div class="role">Senior Firmware &amp; Hardware Engineer · <a href="https://fanap-infra.com/en" target="_blank" rel="noopener">FANAP Co.</a></div>
-          <div class="muted">Company building industrial and banking infrastructure.</div>
-          <ul class="points">
-            <li><b>Industrial IoT edge gateway:</b> led the hardware team and designed the 8-layer PCB from scratch,
-              with 5 kV-isolated Gigabit Ethernet, PoE++ and LTE/Wi-Fi, following IEC 61000, IEC 60068, IEC 62443 and
-              ATEX guidelines. Wrote the FreeRTOS and embedded Linux firmware and a bring-up framework for 10+
-              interfaces.</li>
-          </ul></li>
-        <li><div class="when">03/2015 – 08/2020</div><div class="role">Electronic &amp; Firmware Engineer · Contractor</div>
-          <div class="muted">Clients in oil &amp; gas, power, industrial automation and medical devices.</div>
-          <ul class="points">
-            <li><b>Seismic Gas Shut-off System:</b> 3-axis 24-bit sensing with real-time DSP on a 6-layer PCB</li>
-            <li><b>Ultrasonic Medical Oxygen Monitor:</b> oxygen and temperature monitoring with a TFT display</li>
-            <li><b>Embedded Graphics &amp; Video Engine:</b> animations and video playback on a Cortex-M3, sold to a client</li>
-            <li>More client projects in the <a href="#projects">project folders</a></li>
-          </ul></li>
-      </ul>
-    </section>
-
-    <section class="card">
-      <h2>Education &amp; languages</h2>
-      <ul class="timeline">
-        <li><div class="when">10/2021 – 01/2024</div><div class="role">M.Sc. in Electrical Engineering – Digital Electronic Systems</div>
-          <div class="muted"><a href="https://en.sbu.ac.ir" target="_blank" rel="noopener">Shahid Beheshti University</a>, Tehran, Iran · GPA 18.42 / 20 · Thesis grade: Excellent</div>
-          <div>Thesis: <i>Provision of an Optimized Cost and Dimension Processing System for Flame Detection</i></div>
-          <ul class="points">
-            <li>Designed a TinyML flame detector that runs entirely on a small MCU without a cloud connection, on two
-              custom PCBs that fit in 1×2×3 cm and cost about $8.</li>
-            <li>Wrote an embedded web server to collect 8,776 training images through the detector's own camera, so the
-              training data matches what it sees in the field.</li>
-            <li>Reached 99.18% test accuracy with a small INT8 CNN; a DSP filter checks consecutive frames, so a single
-              wrong frame does not trigger an alarm.</li>
-          </ul></li>
-        <li><div class="when">10/2011 – 02/2015</div><div class="role">B.Sc. in Electronic Engineering</div>
-          <div class="muted">Shamsipour Technical College, Tehran, Iran</div>
-          <div>Thesis: BIA-Based Body Water &amp; Body Fat Analyzer, ±6% accuracy</div></li>
-      </ul>
-      <p style="margin-top:16px">English (Fluent) · German (Basic, learning) · Persian (Native) · Kurdish (Fluent)</p>
-    </section>
-
-    <section class="card cta">
-      <div><b>See the work</b><div class="muted">Project folders with demos, photos and documents.</div></div>
-      <a class="btn primary" href="#projects">View projects</a>
-    </section>
-  </div>
-</div>
+<!-- ===================== PROFILE (filled in after the password; see tools/build.py) ===================== -->
+<div id="view-profile" hidden></div>
 
 <!-- ===================== PASSWORD GATE ===================== -->
 <div id="view-gate" class="backdrop" hidden>
   <div class="poster"></div>
-  <video autoplay muted loop playsinline preload="none" poster="assets/hero-poster.jpg" aria-hidden="true">
-    <source src="assets/hero.mp4" type="video/mp4">
-  </video>
   <div class="shade"></div>
   <div class="wrap gate">
     <form id="gate-form" class="card">
-      <h1>Projects are password-protected</h1>
+      <h1>Portfolio is password-protected</h1>
       <p class="muted">The password is in my CV, next to the portfolio link.</p>
       <input id="password" type="password" autocomplete="current-password" placeholder="Password" required>
-      <button id="unlock" class="btn primary" type="submit">Open projects</button>
+      <button id="unlock" class="btn primary" type="submit">Open portfolio</button>
       <p id="gate-msg" class="msg" role="alert"></p>
       <p class="request">No CV at hand? Email me and I'll send you the password:<br>
         <a href="mailto:pouryaafshintabar@gmail.com?subject=Portfolio%20password%20request&amp;body=Hello%20Pourya%2C%0A%0AI%20am%20%5Bname%5D%20from%20%5Bcompany%5D%20and%20would%20like%20to%20see%20your%20projects.%0A">pouryaafshintabar@gmail.com</a></p>
-      <a class="back" href="#">← Back to profile</a>
     </form>
   </div>
 </div>
@@ -537,6 +380,9 @@
     const json = new TextDecoder().decode(await decrypt(k, bytes(SITE.manifest)));  // throws on a wrong password
     key = k;
     manifest = JSON.parse(json);
+    const profile = $("#view-profile");
+    profile.innerHTML = manifest.profile;
+    hydrateAssets(profile).catch(err => console.error(err));
     try { sessionStorage.setItem(STORE, password); } catch (e) { /* storage blocked: ask again next time */ }
   }
 
@@ -687,6 +533,17 @@
   }
 
   // Inline images and diagrams in a project page (_about.md).
+  // Profile pictures and video are encrypted files too; they load once the password has unlocked the site.
+  async function hydrateAssets(root) {
+    for (const el of root.querySelectorAll("[data-src], [data-poster]")) {
+      const id = el.dataset.src || el.dataset.poster;
+      const url = URL.createObjectURL(new Blob([await fileBytes({ id })], { type: el.type || "" }));
+      if (el.dataset.poster) el.poster = url;
+      else el.src = url;
+      if (el.tagName === "SOURCE") el.parentElement.load();
+    }
+  }
+
   async function hydrate(pi, container) {
     for (const img of container.querySelectorAll("img[data-file]")) {
       if (img.alt && !img.closest("figure, table")) {  // the alt text becomes a visible caption
@@ -844,7 +701,7 @@
   }
 
   async function route() {
-    // A share link (#projects?key=PASSWORD) unlocks the projects; the password is then removed from the address bar.
+    // A link with ?key=PASSWORD in the address unlocks the site; the password is then removed from the address bar.
     const link = location.hash.match(/[?&]key=([^&]*)/);
     if (link) {
       history.replaceState(null, "", location.pathname + location.search + location.hash.replace(/[?&]key=[^&]*/, ""));
@@ -854,9 +711,9 @@
       }
     }
     closeViewer();
+    if (!manifest) { show("gate"); setTimeout(() => $("#password").focus(), 0); return; }
     const m = location.hash.match(/^#projects(?:\/(\d+))?(?:\/(\d+))?$/);
     if (!m) { show("profile"); return; }
-    if (!manifest) { show("gate"); setTimeout(() => $("#password").focus(), 0); return; }
     show("projects");
     const pi = m[1] === undefined ? -1 : +m[1];
     if (!manifest.projects[pi]) { renderGrid(); window.scrollTo(0, 0); return; }
