@@ -183,6 +183,36 @@
   .project-hero video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .project-hero::after { content: ""; position: absolute; inset: 0; pointer-events: none;
                          background: linear-gradient(to top, var(--bg) 0, transparent 22%); }
+  /* Animated sticker and headline over the header video (_hero.txt) */
+  .hero-sticker { position: absolute; top: 5%; right: 4%; z-index: 2; width: clamp(108px, 24%, 200px); aspect-ratio: 1;
+                  animation: sticker-pop .9s cubic-bezier(.2, 1.7, .4, 1) .4s both; }
+  .hero-sticker::before { content: ""; position: absolute; inset: 14%; border-radius: 50%; border: 3px solid #FFD54A;
+                          animation: sticker-ping 1.8s ease-out 1.3s infinite; }
+  .hero-sticker svg { position: absolute; inset: 0; width: 100%; height: 100%; filter: drop-shadow(0 8px 16px rgba(0, 0, 0, .5));
+                      animation: sticker-spin 16s linear infinite; }
+  .hero-sticker .txt { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; color: #2A1600;
+                       transform: rotate(-10deg); animation: sticker-beat 1.4s ease-in-out 1.3s infinite; }
+  .hero-sticker small { font-weight: 800; font-size: clamp(.55rem, 1.7vw, .82rem); letter-spacing: .14em; }
+  .hero-sticker b { font-weight: 900; font-size: clamp(1.35rem, 5vw, 2.5rem); line-height: 1; letter-spacing: -.02em; }
+  .hero-headline { position: absolute; left: 4%; bottom: 10%; z-index: 2; max-width: min(72%, 560px); padding: 10px 16px 12px;
+                   border-radius: 12px; background: rgba(8, 10, 16, .6); backdrop-filter: blur(3px); color: #FFFFFF;
+                   box-shadow: 0 10px 26px rgba(0, 0, 0, .35); animation: headline-in .8s ease-out .8s both; }
+  .hero-headline em { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 999px; font-style: normal; font-weight: 800;
+                      font-size: .68rem; letter-spacing: .12em; color: #2A1600; background: #FFC21A; }
+  .hero-headline em:empty { display: none; }
+  .hero-headline span { display: block; font-weight: 800; font-size: clamp(.95rem, 2.7vw, 1.55rem); line-height: 1.25;
+                        background: linear-gradient(100deg, #FFFFFF 0 42%, #FFE066 50%, #FFFFFF 58% 100%); background-size: 250% 100%;
+                        -webkit-background-clip: text; background-clip: text; color: transparent; animation: headline-shine 3s linear 1.6s infinite; }
+  @keyframes sticker-pop { from { opacity: 0; transform: scale(0) rotate(-60deg); } to { opacity: 1; transform: scale(1) rotate(0); } }
+  @keyframes sticker-spin { to { transform: rotate(360deg); } }
+  @keyframes sticker-beat { 0%, 100% { transform: rotate(-10deg) scale(1); } 50% { transform: rotate(-10deg) scale(1.08); } }
+  @keyframes sticker-ping { from { opacity: .9; transform: scale(.85); } to { opacity: 0; transform: scale(1.6); } }
+  @keyframes headline-in { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+  @keyframes headline-shine { from { background-position: 125% 0; } to { background-position: -125% 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    .hero-sticker, .hero-sticker::before, .hero-sticker svg, .hero-sticker .txt, .hero-headline, .hero-headline span { animation: none; }
+    .hero-sticker::before { display: none; }
+  }
   .about figcaption { margin-top: 8px; text-align: center; font-size: .86rem; color: var(--muted); }
   .about p:has(> figure + figure) { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start; }
   .about p:has(> figure + figure) figure { margin: 0; }
@@ -450,6 +480,14 @@
     <div id="project" hidden>
       <div id="project-hero" class="project-hero" hidden>
         <video muted loop playsinline preload="none" aria-hidden="true" disablepictureinpicture></video>
+        <div class="hero-sticker" hidden>
+          <svg viewBox="0 0 200 200" aria-hidden="true">
+            <defs><radialGradient id="burst" cx="50%" cy="40%" r="65%"><stop offset="0" stop-color="#FFF27A"/><stop offset=".55" stop-color="#FFC21A"/><stop offset="1" stop-color="#FF7A00"/></radialGradient></defs>
+            <polygon fill="url(#burst)" stroke="#FFFFFF" stroke-width="5" stroke-linejoin="round" points=""/>
+          </svg>
+          <div class="txt"><small></small><b></b><small></small></div>
+        </div>
+        <div class="hero-headline" hidden><em></em><span></span></div>
       </div>
       <div id="project-about" class="card about"></div>
       <h2 id="files-title" class="section-title">Files</h2>
@@ -698,12 +736,26 @@
   }), { rootMargin: "300px" });
   function lazyVideo(video, file) { video._file = file; videoObserver.observe(video); }
 
+  // Starburst outline for the header sticker: 24 points on two radii
+  $(".hero-sticker polygon").setAttribute("points", Array.from({ length: 48 }, (_, i) => {
+    const r = i % 2 ? 78 : 96, a = Math.PI * i / 24;
+    return (100 + r * Math.sin(a)).toFixed(1) + "," + (100 - r * Math.cos(a)).toFixed(1);
+  }).join(" "));
+
   const heroes = {};
   function renderHero(p) {
     const box = $("#project-hero"), video = box.querySelector("video");
+    const sticker = box.querySelector(".hero-sticker"), headline = box.querySelector(".hero-headline");
     box.hidden = !p.hero;
     video.pause();
     if (!p.hero) { video.removeAttribute("src"); return; }
+    const parts = p.hero.sticker || [];
+    sticker.hidden = !parts.length;
+    sticker.querySelectorAll(".txt > *").forEach((el, i) => { el.textContent = parts.length === 1 ? (i === 1 ? parts[0] : "") : parts[i] || ""; });
+    headline.hidden = !p.hero.headline;
+    headline.querySelector("span").textContent = p.hero.headline || "";
+    headline.querySelector("em").textContent = p.hero.tag || "";
+    [sticker, headline].forEach(el => { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });  // replay the entrance
     heroes[p.hero.id] = heroes[p.hero.id] || fileBytes(p.hero).then(data => URL.createObjectURL(new Blob([data], { type: p.hero.type })));
     heroes[p.hero.id].then(url => {
       if (video.src !== url) video.src = url;

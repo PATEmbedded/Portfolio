@@ -49,6 +49,7 @@ TAG = "_tag.txt"  # one line under the name of a locked (no files yet) project c
 COVER = "_cover"  # background picture or video of a locked card
 GROUP = "_group.txt"  # a locked project with a group is listed compactly under that heading, not as a big card
 HERO = "_hero"  # video that plays as the moving header of an open project's page
+HERO_TEXT = "_hero.txt"  # sticker, headline and tag shown over that video
 EXT = ".enc"  # not ".bin": Microsoft Edge blocks fetch() of .bin URLs and downloads them instead
 WARN_MB, LIMIT_MB = 25, 95  # GitHub rejects files over 100 MB
 
@@ -190,6 +191,15 @@ def main():
         hero = [p for p in folder.glob(HERO + ".*") if kind_of(p) == "video"]
         if hero:
             entry["hero"] = {"id": store(hero[0])[0], "kind": "video", "type": mime_of(hero[0], "video")}
+            # _hero.txt: line 1 the sticker ("ONLY|72 MHz|STM32F1"), line 2 the headline, line 3 a small tag
+            lines = [l.strip() for l in (folder / HERO_TEXT).read_text(encoding="utf-8").splitlines() if l.strip()] \
+                if (folder / HERO_TEXT).exists() else []
+            if lines:
+                entry["hero"]["sticker"] = [s.strip() for s in lines[0].split("|")]
+            if len(lines) > 1:
+                entry["hero"]["headline"] = lines[1]
+            if len(lines) > 2:
+                entry["hero"]["tag"] = lines[2]
         projects.append(entry)
 
     for stale in OUT_FILES.iterdir():
