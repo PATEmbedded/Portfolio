@@ -7,7 +7,8 @@ project folders. Without it the page shows only the password form.
 Plain-text sources (all git-ignored under private/):
   private/profile.html    the profile page (an HTML fragment; sealed into the manifest)
   private/site/          photo and video used by the profile (photo.jpg, hero.mp4, hero-poster.jpg)
-  private/projects/      one sub-folder per project; every file in it is encrypted into files/
+  private/projects/      one sub-folder per project; every file in it is encrypted into files/. The leading
+                         number orders the folders and is not shown; "02a ..." slots one in after 02.
 A project folder holds _about.md (its page; a leading "# Title" names it), _tag.txt (locked card line),
 _cover.* (card background), _group.txt (compact list heading), _hero.mp4 with _hero.txt (moving header).
 A folder with _tag.txt, or with no files yet, is a locked card. Files under a _folder stay private.
@@ -157,7 +158,7 @@ def main():
         about = folder / ABOUT
         text = about.read_text(encoding="utf-8") if about.exists() else ""
         title = re.match(r"\s*#\s+(.+)(?:\n|$)", text)  # a leading "# Title" names the project
-        name = title.group(1).strip() if title else re.sub(r"^\d+[\s._-]*", "", folder.name)
+        name = title.group(1).strip() if title else re.sub(r"^\d+[a-z]?[\s._-]*", "", folder.name)
         # _about.md is the page, _tag.txt the locked-card line; other _files and _folders (notes, originals) stay private
         paths = [p for p in sorted(folder.rglob("*"))
                  if p.is_file() and not any(part.startswith((".", "_", "~$")) for part in p.relative_to(folder).parts)]

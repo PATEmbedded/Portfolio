@@ -204,7 +204,7 @@
   .folder.locked.has-media .private { top: 8px; right: 8px; z-index: 1; padding: 2px 8px; font-size: .6rem; color: #ffffff;
                                       background: rgba(10, 14, 22, .35); backdrop-filter: blur(2px); }
   .folder.locked.has-media .name, .folder.locked.has-media .tag { padding: 0 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-  .folder.locked.has-media .name { font-size: .92rem; }
+  .folder.locked.has-media .name { font-size: .92rem; white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
   .folder.locked.has-media .tag { font-size: .78rem; }
   /* Earlier work: small locked projects as a compact list, grouped by field */
   .earlier { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; padding-bottom: 40px; }
