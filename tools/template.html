@@ -87,7 +87,7 @@
   .timeline .points li::before { content: none; }
   .cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; }
   /* At a glance: four numbers right under the header (1px gaps on a line-coloured grid draw the dividers) */
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; padding: 0; overflow: hidden; background: var(--line); }
+  .card.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; padding: 0; overflow: hidden; background: var(--line); }
   .stat { padding: 20px 14px 18px; text-align: center; background: var(--surface); }
   .stat .num { font-size: clamp(2rem, 4.4vw, 2.6rem); font-weight: 800; line-height: 1.1; color: var(--accent); font-variant-numeric: tabular-nums; }
   .stat .num small { font-size: .5em; font-weight: 700; }
@@ -116,7 +116,7 @@
   .steps b { display: block; font-size: .95rem; line-height: 1.3; }
   .steps span { display: block; margin-top: 6px; color: var(--muted); font-size: .84rem; line-height: 1.45; }
   @media (max-width: 760px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
+    .card.stats { grid-template-columns: repeat(2, 1fr); }
     .steps { grid-template-columns: 1fr; gap: 12px; }
     .steps li:not(:last-child)::after { top: auto; right: auto; bottom: -9px; left: 24px; transform: rotate(135deg); }
   }
